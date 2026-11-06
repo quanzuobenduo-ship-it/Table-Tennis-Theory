@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>卓球ノート (Table Tennis Note)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    
+    /* コート＆グリッド全体コンテナ (幅290px, 高さ370px) */
+    .court-container {
+      position: relative;
+      width: 290px;
+      height: 370px;
+      margin: 0 auto;
+      background-color: #0f172a;
+    }
+    
+    /* 卓球台本体 */
+    .table-body {
+      position: absolute;
+      top: 10px;
+      left: 45px;
+      width: 200px;
+      height: 240px;
+      background-color: #0c4a6e;
+      border: 4px solid #ffffff;
+      box-sizing: border-box;
+    }
+    .table-center-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      background-color: #ffffff;
+      transform: translateX(-50%);
+    }
+    .table-net-line {
+      position: absolute;
+      top: 50%;
+      left: -10px;
+      right: -10px;
+      height: 6px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-top: 1px dashed #94a3b8;
+      border-bottom: 1px dashed #94a3b8;
+      transform: translateY(-50%);
+      z-index: 10;
+    }
+
+    /* コート外手前エリア (5x3) */
+    .out-body {
+      position: absolute;
+      top: 250px;
+      left: 0;
+      width: 290px;
+      height: 120px;
+      border: 1px dashed #475569;
+      border-top: none;
+      background-color: rgba(15, 23, 42, 0.6);
+      box-sizing: border-box;
+    }
+
+    /* 点（グリッドポイント）ボタン */
+    .grid-point {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: #38bdf8;
+      border: 2px solid #ffffff;
+      cursor: pointer;
+      z-index: 30;
+      transition: transform 0.15s, background-color 0.15s;
+    }
+    .grid-point:hover, .grid-point.active {
+      background-color: #ef4444;
+      transform: scale(1.4);
+      box-shadow: 0 0 10px #ef4444;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+  <!-- ハンバーガーメニュー用サイドドロワー (左上からスライド) -->
+  <div id="sidebar" class="fixed inset-y-0 left-0 w-80 bg-slate-800 border-r border-slate-700 shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
+    <div class="p-4 border-b border-slate-700 flex justify-end items-center bg-slate-900/50">
+      <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-2"><i class="fas fa-times text-lg"></i></button>
+    </div>
+    <div id="sidebar-content" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <!-- 動的アコーディオンメニュー -->
+    </div>
+  </div>
+  <!-- オーバーレイ -->
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden"></div>
+
+  <!-- カードクリック時の拡大詳細モーダル -->
+  <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 overflow-y-auto">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-2xl my-8 shadow-2xl relative">
+      <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-700 w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+      <div id="detail-modal-content">
+        <!-- 選択された技術の詳細 -->
+      </div>
+    </div>
+  </div>
+
+  <div id="app" class="max-w-5xl mx-auto p-4 md:p-6">
+    <!-- ヘッダー -->
+    <header class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+      <div class="flex items-center gap-3">
+        <!-- 左上のハンバーガーメニューボタン -->
+        <button onclick="toggleSidebar()" id="hamburger-btn" class="hidden text-slate-300 hover:text-white bg-slate-800 border border-slate-700 p-2.5 rounded-lg transition-colors shadow-md">
+          <i class="fas fa-bars text-lg"></i>
+        </button>
+        <div class="flex items-center gap-3 cursor-pointer" onclick="showHome()">
+          <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">🏓</div>
+          <div>
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-red-500 to-blue-400 bg-clip-text text-transparent">卓球ノート</h1>
+            <p class="text-xs text-slate-400">My Table Tennis Strategy & Tech Note</p>
+          </div>
+        </div>
+      </div>
+      <button onclick="openModal()" class="bg-red-600 hover:bg-red-500 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2 shadow-md transition-all">
+        <i class="fas fa-plus"></i> 新規追加
+      </button>
+    </header>
+
+    <!-- メインコンテンツ領域 -->
+    <main id="main-content"></main>
+  </div>
+
+  <!-- モーダル（新規追加/編集） -->
+  <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 overflow-y-auto">
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 w-full max-w-4xl my-8 shadow-2xl">
+      <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
+        <h3 id="modal-title" class="text-xl font-bold text-slate-100">ノートを追加</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+      </div>
+      
+      <form id="note-form" onsubmit="saveNote(event)">
+        <input type="hidden" id="note-id">
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-slate-300 mb-1">カテゴリー</label>
+          <select id="note-category" onchange="toggleTechFields()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-red-500" required>
+            <option value="tech">自分の持っている技術</option>
+            <option value="pattern">配球パターン</option>
+            <option value="tactic">戦術</option>
+            <option value="theory">卓球理論</option>
+            <option value="equipment">使用用具</option>
+          </select>
+        </div>
+
+        <!-- 技術用（4つの項目選択＋コース選択） -->
+        <div id="tech-special-fields" class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
+          <div class="md:col-span-4 bg-slate-900/80 p-4 rounded-xl border border-slate-700 space-y-3">
+            <h4 class="text-sm font-bold text-red-400 border-b border-slate-700 pb-2 mb-2"><i class="fas fa-filter mr-1"></i> 4つの基本項目</h4>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">① 利き手</label>
+              <select id="tech-hand" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm">
+                <option value="右手">右手</option>
+                <option value="左手">左手</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">② グリップ</label>
+              <select id="tech-grip" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm">
+                <option value="ペン">ペン</option>
+                <option value="シェーク">シェーク</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">③ ラバー種類</label>
+              <select id="tech-surface" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm">
+                <option value="裏ソフト">裏ソフト</option>
+                <option value="粒高">粒高</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">④ ポジション</label>
+              <select id="tech-position" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm">
+                <option value="台上">台上</option>
+                <option value="前陣">前陣</option>
+                <option value="中陣">中陣</option>
+                <option value="後陣">後陣</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="md:col-span-8 bg-slate-900/80 p-4 rounded-xl border border-slate-700 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center border-b border-slate-700 pb-2 mb-2">
+                <h4 class="text-sm font-bold text-blue-400"><i class="fas fa-map-marker-alt mr-1"></i> コース矢印設定</h4>
+                <button type="button" onclick="clearCourseArrows()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-slate-300">クリア</button>
+              </div>
+              <p class="text-xs text-slate-400 mb-3">点をタップして起点と終点を選び矢印を設定してください</p>
+            </div>
+
+            <div class="court-container rounded overflow-hidden shadow-inner">
+              <div class="table-body">
+                <div class="table-center-line"></div>
+                <div class="table-net-line"></div>
+              </div>
+              <div class="out-body"></div>
+              <svg id="court-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20"></svg>
+              <div id="points-layer" class="absolute inset-0 pointer-events-auto"></div>
+            </div>
+
+            <div class="flex justify-between text-[10px] text-slate-400 mt-2 px-2">
+              <span>▲ 相手(3x3)</span>
+              <span>自分台内(3x3)</span>
+              <span>手前(5x3) ▼</span>
+            </div>
+
+            <div id="course-list-text" class="text-xs text-slate-300 mt-2 bg-slate-800 p-2 rounded min-h-[32px]">
+              選択中のコース: なし
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-slate-300 mb-1">技術名</label>
+          <input type="text" id="note-title" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-red-500" required placeholder="例: フォアドライブ, バック粒高ショート">
+        </div>
+        
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-slate-300 mb-1">詳細・メモ（打法・ポイント）</label>
+          <textarea id="note-content" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-red-500" required placeholder="打球ポイント、体の使い方、意識するコツを入力..."></textarea>
+        </div>
+        
+        <div class="flex justify-end gap-3">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium">キャンセル</button>
+          <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium shadow-md">保存する</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const categories = [
+      { id: 'tech', name: '自分の持っている技術', icon: 'fa-ping-pong-paddle-ball', color: 'from-red-500 to-rose-600', desc: '4つの項目から選び、一覧表示とハンバーガーメニューの目次で確認' },
+      { id: 'pattern', name: '配球パターン', icon: 'fa-diagram-project', color: 'from-orange-500 to-amber-600', desc: '展開作りやラリー構成、コース取りのパターン' },
+      { id: 'tactic', name: '戦術', icon: 'fa-chess-board', color: 'from-emerald-500 to-teal-600', desc: '戦型別の対策、試合中の組み立て方' },
+      { id: 'theory', name: '卓球理論', icon: 'fa-brain', color: 'from-blue-500 to-indigo-600', desc: '回転・板線・身体の使い方などの原理原則' },
+      { id: 'equipment', name: '使用用具', icon: 'fa-sliders', color: 'from-purple-500 to-violet-600', desc: 'ラケット、ラバーの組み合わせと用具の特徴' }
+    ];
+
+    const defaultNotes = [
+      { id: '1', category: 'equipment', title: 'CROSSiSLAND', content: 'WRM 小島プロデュース ラケット。木材の打球感と粒高でのブロックの安定感が特徴。', updatedAt: '2026-11-06' },
+      { id: '2', category: 'equipment', title: 'Grass D.TecS', content: 'TIBHAR / OX / 赤。圧倒的な変化量と自発的な切れ味を誇る粒高ラバー。', updatedAt: '2026-11-06' },
+      { id: '3', category: 'equipment', title: 'DIGNICS 09C', content: 'BUTTERFLY / 厚 / 黒。粘着性ハイテンション。回転量と抑え込みやすさのバランスに優れる。', updatedAt: '2026-11-06' },
+      { 
+        id: '4', 
+        category: 'tech', 
+        title: 'フォアドライブ', 
+        techDetails: { hand: '右手', grip: 'ペン', surface: '裏ソフト', position: '前陣' },
+        arrows: [{ from: {x: 145, y: 215}, to: {x: 65, y: 35} }, { from: {x: 145, y: 215}, to: {x: 225, y: 35} }],
+        content: 'コンパクトなスイングで回転をしっかりかける。相手クロスおよびストレートへの打ち分け。', 
+        updatedAt: '2026-11-06' 
+      }
+    ];
+
+    let notes = JSON.parse(localStorage.getItem('tt_notes_v17')) || defaultNotes;
+    let currentCategory = null;
+    let techFilterStep = { hand: null, grip: null, surface: null, position: null };
+    let selectedPointStart = null;
+    let currentArrows = [];
+
+    // グリッド座標計算
+    function getAllPointsCoordinates() {
+      const points = [];
+      const colX3 = [65, 145, 225];
+      const colX5 = [25, 65, 145, 225, 265];
+
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          points.push({ id: `opp-${r * 3 + c + 1}`, x: colX3[c], y: 35 + r * 35 });
+        }
+      }
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          points.push({ id: `self-in-${r * 3 + c + 1}`, x: colX3[c], y: 155 + r * 35 });
+        }
+      }
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 5; c++) {
+          points.push({ id: `self-out-${r * 5 + c + 1}`, x: colX5[c], y: 265 + r * 35 });
+        }
+      }
+      return points;
+    }
+
+    function saveToStorage() {
+      localStorage.setItem('tt_notes_v17', JSON.stringify(notes));
+    }
+
+    function initCourtPoints() {
+      const layer = document.getElementById('points-layer');
+      if (!layer) return;
+      const points = getAllPointsCoordinates();
+      let html = '';
+      points.forEach(p => {
+        html += `<div class="grid-point absolute" data-id="${p.id}" style="left:${p.x - 8}px; top:${p.y - 8}px;" onclick="handlePointClick('${p.id}', ${p.x}, ${p.y})"></div>`;
+      });
+      layer.innerHTML = html;
+    }
+
+    function toggleTechFields() {
+      const cat = document.getElementById('note-category').value;
+      const techFields = document.getElementById('tech-special-fields');
+      if (cat === 'tech') {
+        techFields.classList.remove('hidden');
+        setTimeout(initCourtPoints, 50);
+      } else {
+        techFields.classList.add('hidden');
+      }
+    }
+
+    function handlePointClick(id, x, y) {
+      if (!selectedPointStart) {
+        selectedPointStart = { id, x, y };
+        document.querySelectorAll('.grid-point').forEach(el => el.classList.remove('active'));
+        const target = document.querySelector(`[data-id="${id}"]`);
+        if (target) target.classList.add('active');
+      } else {
+        currentArrows.push({ from: { x: selectedPointStart.x, y: selectedPointStart.y }, to: { x, y } });
+        selectedPointStart = null;
+        document.querySelectorAll('.grid-point').forEach(el => el.classList.remove('active'));
+        renderCourtArrows();
+      }
+    }
+
+    function clearCourseArrows() {
+      currentArrows = [];
+      selectedPointStart = null;
+      document.querySelectorAll('.grid-point').forEach(el => el.classList.remove('active'));
+      renderCourtArrows();
+    }
+
+    function renderCourtArrows() {
+      const svg = document.getElementById('court-svg');
+      const textContainer = document.getElementById('course-list-text');
+      if (!svg) return;
+      
+      svg.innerHTML = `
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#ef4444" />
+          </marker>
+        </defs>
+      `;
+
+      if (currentArrows.length === 0) {
+        if (textContainer) textContainer.innerText = '選択中のコース: なし';
+        return;
+      }
+
+      let arrowLines = '';
+      currentArrows.forEach((arr) => {
+        arrowLines += `<line x1="${arr.from.x}" y1="${arr.from.y}" x2="${arr.to.x}" y2="${arr.to.y}" stroke="#ef4444" stroke-width="3.5" marker-end="url(#arrowhead)" />`;
+      });
+      svg.innerHTML += arrowLines;
+      if (textContainer) textContainer.innerText = `選択中のコース: ${currentArrows.length} 本の矢印が登録済み`;
+    }
+
+    // カード一覧用
+    function renderDisplayCourt(arrows) {
+      if (!arrows || arrows.length === 0) return '';
+      let lines = arrows.map(a => `<line x1="${a.from.x / 2}" y1="${a.from.y / 2}" x2="${a.to.x / 2}" y2="${a.to.y / 2}" stroke="#ef4444" stroke-width="2.5" marker-end="url(#arrowhead-disp)" />`).join('');
+      return `
+        <div class="relative w-[145px] h-[185px] mx-auto my-3 rounded overflow-hidden bg-slate-900 border border-slate-700 pointer-events-none">
+          <div class="absolute top-[5px] left-[22.5px] w-[100px] h-[120px] bg-sky-950 border-2 border-white box-border">
+            <div class="absolute top-0 bottom-0 left-1/2 w-[1px] bg-white -translate-x-1/2"></div>
+            <div class="absolute top-1/2 -left-1 -right-1 h-[2px] bg-white -translate-y-1/2"></div>
+          </div>
+          <div class="absolute top-[125px] left-0 w-[145px] h-[60px] border-t border-dashed border-slate-600"></div>
+          <svg class="absolute inset-0 w-full h-full pointer-events-none z-20">
+            <defs>
+              <marker id="arrowhead-disp" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+                <polygon points="0 0, 6 2, 0 4" fill="#ef4444" />
+              </marker>
+            </defs>
+            ${lines}
+          </svg>
+        </div>
+      `;
+    }
+
+    // 拡大ポップアップ用
+    function renderLargeDisplayCourt(arrows) {
+      if (!arrows || arrows.length === 0) return '';
+      let lines = arrows.map(a => `<line x1="${a.from.x}" y1="${a.from.y}" x2="${a.to.x}" y2="${a.to.y}" stroke="#ef4444" stroke-width="3.5" marker-end="url(#arrowhead-large)" />`).join('');
+      return `
+        <div class="relative w-[290px] h-[370px] mx-auto my-4 rounded-xl overflow-hidden bg-slate-900 border-2 border-slate-600 shadow-inner">
+          <div class="absolute top-[10px] left-[45px] w-[200px] h-[240px] bg-sky-950 border-4 border-white box-border">
+            <div class="absolute top-0 bottom-0 left-1/2 w-[2px] bg-white -translate-x-1/2"></div>
+            <div class="absolute top-1/2 -left-10 -right-10 h-[6px] bg-white/90 border-t border-b border-slate-400 -translate-y-1/2 z-10"></div>
+          </div>
+          <div class="absolute top-[250px] left-0 w-[290px] h-[120px] border-t border-dashed border-slate-500 bg-slate-900/60"></div>
+          <svg class="absolute inset-0 w-full h-full pointer-events-none z-20">
+            <defs>
+              <marker id="arrowhead-large" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#ef4444" />
+              </marker>
+            </defs>
+            ${lines}
+          </svg>
+        </div>
+      `;
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('-translate-x-full');
+      overlay.classList.toggle('hidden');
+      if (!sidebar.classList.contains('-translate-x-full')) {
+        updateSidebarAccordion();
+      }
+    }
+
+    function updateSidebarAccordion() {
+      const container = document.getElementById('sidebar-content');
+      const techNotes = notes.filter(n => n.category === 'tech');
+
+      if (techNotes.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">登録されている技術はありません</p>`;
+        return;
+      }
+
+      const tree = {};
+      techNotes.forEach(n => {
+        const d = n.techDetails || { hand: '右手', grip: 'ペン', surface: '裏ソフト', position: '前陣' };
+        if (!tree[d.hand]) tree[d.hand] = {};
+        if (!tree[d.hand][d.grip]) tree[d.hand][d.grip] = {};
+        if (!tree[d.hand][d.grip][d.surface]) tree[d.hand][d.grip][d.surface] = {};
+        if (!tree[d.hand][d.grip][d.surface][d.position]) tree[d.hand][d.grip][d.surface][d.position] = [];
+        tree[d.hand][d.grip][d.surface][d.position].push(n);
+      });
+
+      let html = '';
+      for (const hand in tree) {
+        html += `
+          <div class="border border-slate-700 rounded-lg overflow-hidden bg-slate-900/50">
+            <button onclick="toggleAccordionNode(this)" class="w-full flex justify-between items-center p-3 text-sm font-bold text-slate-200 hover:bg-slate-700/50 transition-colors">
+              <span>✋ ${hand}</span>
+              <i class="fas fa-chevron-down text-xs transition-transform"></i>
+            </button>
+            <div class="hidden p-2 pl-4 space-y-2 border-t border-slate-700/50 bg-slate-900/30">
+        `;
+        for (const grip in tree[hand]) {
+          html += `
+            <div class="border border-slate-700/60 rounded overflow-hidden">
+              <button onclick="toggleAccordionNode(this)" class="w-full flex justify-between items-center p-2 text-xs font-bold text-slate-300 hover:bg-slate-700/50">
+                <span>🏓 ${grip}</span>
+                <i class="fas fa-chevron-down text-xs transition-transform"></i>
+              </button>
+              <div class="hidden p-2 pl-4 space-y-2 border-t border-slate-700/50">
+          `;
+          for (const surf in tree[hand][grip]) {
+            html += `
+              <div class="border border-slate-700/40 rounded overflow-hidden">
+                <button onclick="toggleAccordionNode(this)" class="w-full flex justify-between items-center p-2 text-xs font-medium text-slate-300 hover:bg-slate-700/50">
+                  <span>🔴 ${surf}</span>
+                  <i class="fas fa-chevron-down text-xs transition-transform"></i>
+                </button>
+                <div class="hidden p-2 pl-4 space-y-2 border-t border-slate-700/30">
+            `;
+            for (const pos in tree[hand][grip][surf]) {
+              html += `
+                <div class="border border-slate-700/30 rounded overflow-hidden">
+                  <button onclick="toggleAccordionNode(this)" class="w-full flex justify-between items-center p-1.5 text-[11px] font-medium text-blue-300 hover:bg-slate-700/50">
+                    <span>📍 ${pos}</span>
+                    <i class="fas fa-chevron-down text-xs transition-transform"></i>
+                  </button>
+                  <div class="hidden p-1.5 pl-3 space-y-1 border-t border-slate-700/20">
+              `;
+              tree[hand][grip][surf][pos].forEach(note => {
+                html += `<div onclick="openDetailModal('${note.id}')" class="text-xs text-slate-300 hover:text-red-400 cursor-pointer py-1 truncate">• ${escapeHtml(note.title)}</div>`;
+              });
+              html += `</div></div>`;
+            }
+            html += `</div></div>`;
+          }
+          html += `</div></div>`;
+        }
+        html += `</div></div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function toggleAccordionNode(btn) {
+      const content = btn.nextElementSibling;
+      const icon = btn.querySelector('.fa-chevron-down');
+      content.classList.toggle('hidden');
+      if (icon) icon.classList.toggle('rotate-180');
+    }
+
+    function openDetailModal(id) {
+      if (!document.getElementById('sidebar').classList.contains('-translate-x-full')) {
+        toggleSidebar();
+      }
+      const note = notes.find(n => n.id === id);
+      if (!note) return;
+
+      const modal = document.getElementById('detail-modal');
+      const content = document.getElementById('detail-modal-content');
+
+      content.innerHTML = `
+        <div class="mb-4">
+          <h3 class="text-2xl font-bold text-slate-100 mb-2">${escapeHtml(note.title)}</h3>
+          ${note.techDetails ? `
+            <div class="text-xs text-blue-300 bg-slate-900/80 p-2 rounded mb-3 flex flex-wrap gap-2 border border-slate-700/50">
+              <span>✋ ${note.techDetails.hand}</span>
+              <span>🏓 ${note.techDetails.grip}</span>
+              <span>🔴 ${note.techDetails.surface}</span>
+              <span>📍 ${note.techDetails.position}</span>
+            </div>
+          ` : ''}
+        </div>
+        ${renderLargeDisplayCourt(note.arrows)}
+        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 mb-4">
+          <p class="text-slate-200 text-sm whitespace-pre-wrap leading-relaxed">${escapeHtml(note.content)}</p>
+        </div>
+        <div class="flex justify-between items-center text-xs text-slate-400 border-t border-slate-700 pt-3">
+          <span>更新日: ${note.updatedAt}</span>
+          <div class="flex gap-2">
+            <button onclick="closeDetailModal(); editNote('${note.id}')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-white"><i class="fas fa-pen mr-1"></i> 編集</button>
+            <button onclick="closeDetailModal(); deleteNote('${note.id}')" class="bg-red-900/60 hover:bg-red-800 px-3 py-1.5 rounded text-red-200"><i class="fas fa-trash mr-1"></i> 削除</button>
+          </div>
+        </div>
+      `;
+      modal.classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+    }
+
+    function showHome() {
+      currentCategory = null;
+      techFilterStep = { hand: null, grip: null, surface: null, position: null };
+      document.getElementById('hamburger-btn').classList.add('hidden');
+      const main = document.getElementById('main-content');
+      main.innerHTML = `
+        <div class="mb-8 text-center md:text-left">
+          <h2 class="text-3xl font-extrabold text-slate-100 mb-2">ダッシュボード</h2>
+          <p class="text-slate-400">項目を選択してノートを確認・編集できます</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          ${categories.map(cat => {
+            const count = notes.filter(n => n.category === cat.id).length;
+            return `
+              <div onclick="showCategory('${cat.id}')" class="bg-slate-800/80 border border-slate-700/80 hover:border-slate-500 rounded-xl p-6 cursor-pointer transform hover:-translate-y-1 transition-all shadow-xl group">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="w-12 h-12 rounded-lg bg-gradient-to-br ${cat.color} flex items-center justify-center text-white text-xl shadow-md group-hover:scale-110 transition-transform">
+                    <i class="fas ${cat.icon}"></i>
+                  </div>
+                  <span class="bg-slate-900 border border-slate-700 text-slate-300 text-xs px-2.5 py-1 rounded-full font-bold">${count} 件</span>
+                </div>
+                <h3 class="text-xl font-bold text-slate-100 mb-2 group-hover:text-red-400 transition-colors">${cat.name}</h3>
+                <p class="text-sm text-slate-400 leading-relaxed">${cat.desc}</p>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function showCategory(catId) {
+      currentCategory = catId;
+      techFilterStep = { hand: null, grip: null, surface: null, position: null };
+      
+      if (catId === 'tech') {
+        document.getElementById('hamburger-btn').classList.remove('hidden');
+      } else {
+        document.getElementById('hamburger-btn').classList.add('hidden');
+      }
+      renderCategoryView();
+    }
+
+    function renderCategoryView() {
+      const cat = categories.find(c => c.id === currentCategory);
+      const main = document.getElementById('main-content');
+
+      if (currentCategory === 'tech') {
+        main.innerHTML = `
+          <div class="flex items-center gap-2 text-sm text-slate-400 mb-4">
+            <span class="cursor-pointer hover:text-slate-200" onclick="showHome()">ホーム</span>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-slate-200 font-medium">${cat.name}</span>
+            ${techFilterStep.hand ? `<i class="fas fa-chevron-right text-xs"></i><span class="text-slate-200 font-medium">${techFilterStep.hand}</span>` : ''}
+            ${techFilterStep.grip ? `<i class="fas fa-chevron-right text-xs"></i><span class="text-slate-200 font-medium">${techFilterStep.grip}</span>` : ''}
+            ${techFilterStep.surface ? `<i class="fas fa-chevron-right text-xs"></i><span class="text-slate-200 font-medium">${techFilterStep.surface}</span>` : ''}
+            ${techFilterStep.position ? `<i class="fas fa-chevron-right text-xs"></i><span class="text-slate-200 font-medium">${techFilterStep.position}</span>` : ''}
+          </div>
+
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br ${cat.color} flex items-center justify-center text-white text-lg shadow-md">
+                <i class="fas ${cat.icon}"></i>
+              </div>
+              <h2 class="text-2xl font-bold text-slate-100">${cat.name}</h2>
+            </div>
+            <input type="text" id="search-input" oninput="filterNotes()" placeholder="検索キーワードを入力..." class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 text-sm focus:outline-none focus:border-red-500 w-full md:w-64">
+          </div>
+
+          <div id="tech-selection-container">
+            ${renderTechSelectionOrList()}
+          </div>
+        `;
+      } else {
+        const filtered = notes.filter(n => n.category === currentCategory);
+        main.innerHTML = `
+          <div class="flex items-center gap-2 text-sm text-slate-400 mb-4">
+            <span class="cursor-pointer hover:text-slate-200" onclick="showHome()">ホーム</span>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span class="text-slate-200 font-medium">${cat.name}</span>
+          </div>
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br ${cat.color} flex items-center justify-center text-white text-lg shadow-md">
+                <i class="fas ${cat.icon}"></i>
+              </div>
+              <h2 class="text-2xl font-bold text-slate-100">${cat.name}</h2>
+            </div>
+            <input type="text" id="search-input" oninput="filterNotes()" placeholder="検索キーワードを入力..." class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 text-sm focus:outline-none focus:border-red-500 w-full md:w-64">
+          </div>
+          <div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${renderNotesList(filtered)}
+          </div>
+        `;
+      }
+    }
+
+    function renderTechSelectionOrList() {
+      let html = '';
+
+      if (techFilterStep.position) {
+        html += `<button onclick="techFilterStep.position=null; renderCategoryView();" class="mb-4 text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded text-slate-300 flex items-center gap-1"><i class="fas fa-arrow-left"></i> ポジション選択に戻る</button>`;
+        const list = notes.filter(n => n.category === 'tech' && n.techDetails && 
+          n.techDetails.hand === techFilterStep.hand && 
+          n.techDetails.grip === techFilterStep.grip && 
+          n.techDetails.surface === techFilterStep.surface && 
+          n.techDetails.position === techFilterStep.position);
+        
+        html += `<div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">${renderNotesList(list)}</div>`;
+      } else if (techFilterStep.surface) {
+        html += `<button onclick="techFilterStep.surface=null; renderCategoryView();" class="mb-4 text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded text-slate-300 flex items-center gap-1"><i class="fas fa-arrow-left"></i> ラバー種類に戻る</button>`;
+        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">④ ポジションを選んでください</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-4">`;
+        ['台上', '前陣', '中陣', '後陣'].forEach(pos => {
+          const count = notes.filter(n => n.category === 'tech' && n.techDetails && n.techDetails.hand === techFilterStep.hand && n.techDetails.grip === techFilterStep.grip && n.techDetails.surface === techFilterStep.surface && n.techDetails.position === pos).length;
+          html += `<div onclick="techFilterStep.position='${pos}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-5 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-lg font-bold text-slate-100 mb-1">${pos}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
+        });
+        html += `</div>`;
+      } else if (techFilterStep.grip) {
+        html += `<button onclick="techFilterStep.grip=null; renderCategoryView();" class="mb-4 text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded text-slate-300 flex items-center gap-1"><i class="fas fa-arrow-left"></i> グリップに戻る</button>`;
+        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">③ ラバー種類を選んでください</h3><div class="grid grid-cols-2 md:grid-cols-2 gap-4">`;
+        ['裏ソフト', '粒高'].forEach(surf => {
+          const count = notes.filter(n => n.category === 'tech' && n.techDetails && n.techDetails.hand === techFilterStep.hand && n.techDetails.grip === techFilterStep.grip && n.techDetails.surface === surf).length;
+          html += `<div onclick="techFilterStep.surface='${surf}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-6 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-xl font-bold text-slate-100 mb-1">${surf}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
+        });
+        html += `</div>`;
+      } else if (techFilterStep.hand) {
+        html += `<button onclick="techFilterStep.hand=null; renderCategoryView();" class="mb-4 text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded text-slate-300 flex items-center gap-1"><i class="fas fa-arrow-left"></i> 利き手に戻る</button>`;
+        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">② グリップを選んでください</h3><div class="grid grid-cols-2 md:grid-cols-2 gap-4">`;
+        ['ペン', 'シェーク'].forEach(grip => {
+          const count = notes.filter(n => n.category === 'tech' && n.techDetails && n.techDetails.hand === techFilterStep.hand && n.techDetails.grip === grip).length;
+          html += `<div onclick="techFilterStep.grip='${grip}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-6 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-xl font-bold text-slate-100 mb-1">${grip}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
+        });
+        html += `</div>`;
+      } else {
+        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">① 利き手を選んでください</h3><div class="grid grid-cols-2 md:grid-cols-2 gap-4">`;
+        ['右手', '左手'].forEach(hand => {
+          const count = notes.filter(n => n.category === 'tech' && n.techDetails && n.techDetails.hand === hand).length;
+          html += `<div onclick="techFilterStep.hand='${hand}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-6 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-xl font-bold text-slate-100 mb-1">${hand}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
+        });
+        html += `</div>`;
+      }
+      return html;
+    }
+
+    function renderNotesList(list) {
+      if (list.length === 0) {
+        return `<div class="col-span-2 text-center py-12 text-slate-500 bg-slate-800/40 rounded-xl border border-slate-800">該当するノートがありません。「新規追加」から登録してください。</div>`;
+      }
+      return list.map(n => `
+        <div onclick="openDetailModal('${n.id}')" class="bg-slate-800/90 border border-slate-700/80 hover:border-red-500/80 rounded-xl p-5 shadow-lg flex flex-col justify-between cursor-pointer transform hover:-translate-y-1 transition-all group">
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <h4 class="text-lg font-bold text-slate-100 group-hover:text-red-400 transition-colors">${escapeHtml(n.title)}</h4>
+              <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+                <button onclick="editNote('${n.id}')" class="text-slate-400 hover:text-blue-400 text-sm p-1"><i class="fas fa-pen"></i></button>
+                <button onclick="deleteNote('${n.id}')" class="text-slate-400 hover:text-red-400 text-sm p-1"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            
+            ${n.techDetails ? `
+              <div class="text-xs text-blue-300 bg-slate-900/80 p-2 rounded mb-3 flex flex-wrap gap-2 border border-slate-700/50">
+                <span>✋ ${n.techDetails.hand}</span>
+                <span>🏓 ${n.techDetails.grip}</span>
+                <span>🔴 ${n.techDetails.surface}</span>
+                <span>📍 ${n.techDetails.position}</span>
+              </div>
+            ` : ''}
+
+            ${renderDisplayCourt(n.arrows)}
+
+            <p class="text-slate-300 text-sm line-clamp-2 leading-relaxed mb-4">${escapeHtml(n.content)}</p>
+          </div>
+          <div class="flex justify-between items-center text-xs text-slate-500 border-t border-slate-700/50 pt-3">
+            <span>更新日: ${n.updatedAt}</span>
+            <span class="text-red-400 font-medium">詳細を見る →</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterNotes() {
+      const q = document.getElementById('search-input').value.toLowerCase();
+      const container = currentCategory === 'tech' && !techFilterStep.position ? null : document.getElementById('notes-container');
+      if (!container) return;
+      const list = notes.filter(n => n.category === currentCategory && (n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q)));
+      container.innerHTML = renderNotesList(list);
+    }
+
+    function openModal(editId = null) {
+      document.getElementById('modal').classList.remove('hidden');
+      clearCourseArrows();
+      
+      if (editId) {
+        const n = notes.find(item => item.id === editId);
+        document.getElementById('modal-title').innerText = 'ノートを編集';
+        document.getElementById('note-id').value = n.id;
+        document.getElementById('note-category').value = n.category;
+        document.getElementById('note-title').value = n.title;
+        document.getElementById('note-content').value = n.content;
+        
+        if (n.techDetails) {
+          document.getElementById('tech-hand').value = n.techDetails.hand || '右手';
+          document.getElementById('tech-grip').value = n.techDetails.grip || 'ペン';
+          document.getElementById('tech-surface').value = n.techDetails.surface || '裏ソフト';
+          document.getElementById('tech-position').value = n.techDetails.position || '前陣';
+        }
+        if (n.arrows) {
+          currentArrows = n.arrows;
+          renderCourtArrows();
+        }
+      } else {
+        document.getElementById('modal-title').innerText = 'ノートを追加';
+        document.getElementById('note-form').reset();
+        document.getElementById('note-id').value = '';
+        if (currentCategory) document.getElementById('note-category').value = currentCategory;
+      }
+      toggleTechFields();
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+    }
+
+    function saveNote(e) {
+      e.preventDefault();
+      const id = document.getElementById('note-id').value;
+      const category = document.getElementById('note-category').value;
+      const title = document.getElementById('note-title').value;
+      const content = document.getElementById('note-content').value;
+      const now = new Date().toISOString().split('T')[0];
+
+      let techDetails = null;
+      let arrows = null;
+
+      if (category === 'tech') {
+        const hand = document.getElementById('tech-hand').value;
+        const grip = document.getElementById('tech-grip').value;
+        const surface = document.getElementById('tech-surface').value;
+        const position = document.getElementById('tech-position').value;
+        techDetails = { hand, grip, surface, position };
+        arrows = currentArrows;
+      }
+
+      if (id) {
+        const index = notes.findIndex(n => n.id === id);
+        notes[index] = { id, category, title, techDetails, arrows, content, updatedAt: now };
+      } else {
+        notes.unshift({ id: Date.now().toString(), category, title, techDetails, arrows, content, updatedAt: now });
+      }
+
+      saveToStorage();
+      closeModal();
+      showCategory(currentCategory);
+    }
+
+    function editNote(id) {
+      openModal(id);
+    }
+
+    function deleteNote(id) {
+      if (confirm('このノートを削除しますか？')) {
+        notes = notes.filter(n => n.id !== id);
+        saveToStorage();
+        showCategory(currentCategory);
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+      });
+    }
+
+    showHome();
+  </script>
+</body>
+</html>
