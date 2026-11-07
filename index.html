@@ -10,21 +10,21 @@
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
     body { font-family: 'Noto Sans JP', sans-serif; }
     
-    /* コート＆グリッド全体コンテナ (幅290px, 高さ440pxに拡大) */
+    /* コート＆グリッド全体コンテナ (幅430px, 高さ490px) */
     .court-container {
       position: relative;
-      width: 290px;
-      height: 440px;
+      width: 430px;
+      height: 490px;
       margin: 0 auto;
       background-color: #0f172a;
     }
     
-    /* 卓球台本体 (幅200px, 高さ280pxに拡大: 上半面140px, 下半面140px) */
+    /* 卓球台本体 (幅300px, 高さ280px: 上半面140px, 下半面140px) */
     .table-body {
       position: absolute;
       top: 15px;
-      left: 45px;
-      width: 200px;
+      left: 65px;
+      width: 300px;
       height: 280px;
       background-color: #0c4a6e;
       border: 4px solid #ffffff;
@@ -42,8 +42,8 @@
     .table-net-line {
       position: absolute;
       top: 50%;
-      left: -10px;
-      right: -10px;
+      left: -12px;
+      right: -12px;
       height: 6px;
       background-color: rgba(255, 255, 255, 0.9);
       border-top: 1px dashed #94a3b8;
@@ -52,13 +52,13 @@
       z-index: 10;
     }
 
-    /* コート外手前エリア (7x3: 下部に配置) */
+    /* コート外手前エリア (幅430px) */
     .out-body {
       position: absolute;
       top: 300px;
       left: 0;
-      width: 290px;
-      height: 130px;
+      width: 430px;
+      height: 180px;
       border: 1px dashed #475569;
       border-top: none;
       background-color: rgba(15, 23, 42, 0.6);
@@ -187,8 +187,8 @@
             </div>
           </div>
 
-          <div class="md:col-span-8 bg-slate-900/80 p-4 rounded-xl border border-slate-700 flex flex-col justify-between">
-            <div>
+          <div class="md:col-span-8 bg-slate-900/80 p-4 rounded-xl border border-slate-700 flex flex-col justify-between items-center overflow-x-auto">
+            <div class="w-full">
               <div class="flex justify-between items-center border-b border-slate-700 pb-2 mb-2">
                 <h4 class="text-sm font-bold text-blue-400"><i class="fas fa-map-marker-alt mr-1"></i> コース矢印設定</h4>
                 <button type="button" onclick="clearCourseArrows()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-slate-300">クリア</button>
@@ -206,13 +206,13 @@
               <div id="points-layer" class="absolute inset-0 pointer-events-auto"></div>
             </div>
 
-            <div class="flex justify-between text-[10px] text-slate-400 mt-2 px-2">
+            <div class="w-full flex justify-between text-[10px] text-slate-400 mt-2 px-2">
               <span>▲ 相手台内(5x4)</span>
               <span>ネット(5x1) / 自分台内(5x4)</span>
               <span>手前(7x3) ▼</span>
             </div>
 
-            <div id="course-list-text" class="text-xs text-slate-300 mt-2 bg-slate-800 p-2 rounded min-h-[32px]">
+            <div id="course-list-text" class="w-full text-xs text-slate-300 mt-2 bg-slate-800 p-2 rounded min-h-[32px]">
               選択中のコース: なし
             </div>
           </div>
@@ -232,7 +232,7 @@
           <p id="pattern-guide-text" class="text-xs text-slate-400 mb-3">1球ごとに「起点→終点」を選び、説明文を入れて追加していくことで連続シーンを作れます。</p>
 
           <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-4">
-            <div class="md:col-span-6 flex flex-col items-center">
+            <div class="md:col-span-6 flex flex-col items-center overflow-x-auto">
               <div class="court-container rounded overflow-hidden shadow-inner">
                 <div class="table-body">
                   <div class="table-center-line"></div>
@@ -295,7 +295,7 @@
         category: 'tech', 
         title: 'フォアドライブ', 
         techDetails: { hand: '右手', grip: 'ペン', surface: '裏ソフト', position: '前陣' },
-        arrows: [{ from: {x: 145, y: 225}, to: {x: 45, y: 15} }, { from: {x: 145, y: 225}, to: {x: 245, y: 15} }],
+        arrows: [{ from: {x: 215, y: 258.33}, to: {x: 65, y: 15} }, { from: {x: 215, y: 258.33}, to: {x: 365, y: 15} }],
         content: 'コンパクトなスイングで回転をしっかりかける。相手クロスおよびストレートへの打ち分け。', 
         updatedAt: '2026-11-06' 
       },
@@ -305,15 +305,15 @@
         title: 'レシーブからの3球目攻撃',
         content: 'ツッツキに対して回り込んでフォアドライブで仕掛けるパターン。',
         scenes: [
-          { arrow: { from: {x: 145, y: 225}, to: {x: 45, y: 77.5} }, desc: '1球目: 深く短いツッツキレシーブ' },
-          { arrow: { from: {x: 45, y: 77.5}, to: {x: 245, y: 15} }, desc: '2球目: 相手がミドルへ返球' },
-          { arrow: { from: {x: 245, y: 225}, to: {x: 45, y: 15} }, desc: '3球目: フォアで回り込んでサイドへ強打' }
+          { arrow: { from: {x: 215, y: 258.33}, to: {x: 65, y: 88.3} }, desc: '1球目: 深く短いツッツキレシーブ' },
+          { arrow: { from: {x: 65, y: 88.3}, to: {x: 365, y: 185} }, desc: '2球目: 相手がミドルへ返球' },
+          { arrow: { from: {x: 365, y: 258.33}, to: {x: 65, y: 15} }, desc: '3球目: フォアで回り込んでサイドへ強打' }
         ],
         updatedAt: '2026-11-06'
       }
     ];
 
-    let notes = JSON.parse(localStorage.getItem('tt_notes_v24')) || defaultNotes;
+    let notes = JSON.parse(localStorage.getItem('tt_notes_v28')) || defaultNotes;
     let currentCategory = null;
     let techFilterStep = { hand: null, grip: null, surface: null, position: null };
     let selectedPointStart = null;
@@ -324,30 +324,33 @@
     let patternCurrentArrow = null;
     let editingSceneIndex = null;
 
-    // 5×9 グリッド座標計算
-    // 台の枠: 左x=45, 右x=245, 上y=15, ネットy=155, 下y=295
-    // 縦9列の配分 (各列に横5点、計45点):
-    // 相手側(4列): y = 15, 51.6, 88.3, 125
-    // ネット(1列): y = 155 (中央の第5列目)
-    // 自分台内(4列): y = 185, 221.6, 258.3, 295
-    // 手前コート外(7x3): y = 330, 362, 394
+    // 5×9 グリッド座標計算 (幅430px, 高さ490px 完全同期版)
     function getAllPointsCoordinates() {
       const points = [];
-      const colX5 = [45, 95, 145, 195, 245];
-      const colX7_out = [-5, 45, 95, 145, 195, 245, 295];
+      const tableLeft = 65;
+      const tableWidth = 300;
+      const colX5_actual = [];
+      for(let i = 0; i < 5; i++) {
+        colX5_actual.push(tableLeft + (tableWidth / 4) * i);
+      }
+
+      const colX7_out = [];
+      for(let i = 0; i < 7; i++) {
+        colX7_out.push(-10 + (450 / 6) * i);
+      }
 
       // 相手側 (5×4)
       for (let r = 0; r < 4; r++) {
         for (let c = 0; c < 5; c++) {
-          const x = colX5[c];
+          const x = colX5_actual[c];
           const y = 15 + r * 36.67;
           points.push({ id: `opp-${r * 5 + c + 1}`, x, y });
         }
       }
 
-      // ネット上 (5×1) - まんなかの第5列目
+      // ネット上 (5×1)
       for (let c = 0; c < 5; c++) {
-        const x = colX5[c];
+        const x = colX5_actual[c];
         const y = 155;
         points.push({ id: `net-${c + 1}`, x, y });
       }
@@ -355,7 +358,7 @@
       // 自分台内 (5×4)
       for (let r = 0; r < 4; r++) {
         for (let c = 0; c < 5; c++) {
-          const x = colX5[c];
+          const x = colX5_actual[c];
           const y = 185 + r * 36.67;
           points.push({ id: `self-in-${r * 5 + c + 1}`, x, y });
         }
@@ -364,14 +367,14 @@
       // 手前コート外 (7×3)
       for (let r = 0; r < 3; r++) {
         for (let c = 0; c < 7; c++) {
-          points.push({ id: `self-out-${r * 7 + c + 1}`, x: colX7_out[c], y: 330 + r * 32 });
+          points.push({ id: `self-out-${r * 7 + c + 1}`, x: colX7_out[c], y: 335 + r * 40 });
         }
       }
       return points;
     }
 
     function saveToStorage() {
-      localStorage.setItem('tt_notes_v24', JSON.stringify(notes));
+      localStorage.setItem('tt_notes_v28', JSON.stringify(notes));
     }
 
     function initCourtPoints(prefix = '') {
@@ -564,16 +567,18 @@
       `).join('');
     }
 
+    /* 一覧カード用ミニプレビュー (430px:490px の比率で縮小表示) */
     function renderDisplayCourt(arrows) {
       if (!arrows || arrows.length === 0) return '';
-      let lines = arrows.map(a => `<line x1="${a.from.x / 2}" y1="${a.from.y / 2}" x2="${a.to.x / 2}" y2="${a.to.y / 2}" stroke="#ef4444" stroke-width="2.5" marker-end="url(#arrowhead-disp)" />`).join('');
+      const scale = 215 / 430; // 0.5倍
+      let lines = arrows.map(a => `<line x1="${a.from.x * scale}" y1="${a.from.y * scale}" x2="${a.to.x * scale}" y2="${a.to.y * scale}" stroke="#ef4444" stroke-width="2.5" marker-end="url(#arrowhead-disp)" />`).join('');
       return `
-        <div class="relative w-[145px] h-[220px] mx-auto my-3 rounded overflow-hidden bg-slate-900 border border-slate-700 pointer-events-none">
-          <div class="absolute top-[7.5px] [left:22.5px] w-[100px] h-[140px] bg-sky-950 border-2 border-white box-border">
+        <div class="relative w-[215px] h-[245px] mx-auto my-3 rounded overflow-hidden bg-slate-900 border border-slate-700 pointer-events-none">
+          <div class="absolute top-[7.5px] left-[32.5px] w-[150px] h-[140px] bg-sky-950 border-2 border-white box-border">
             <div class="absolute top-0 bottom-0 left-1/2 w-[1px] bg-white -translate-x-1/2"></div>
             <div class="absolute top-1/2 -left-1 -right-1 h-[2px] bg-white -translate-y-1/2"></div>
           </div>
-          <div class="absolute top-[147.5px] left-0 w-[145px] h-[72.5px] border-t border-dashed border-slate-600"></div>
+          <div class="absolute top-[147.5px] left-0 w-[215px] h-[97.5px] border-t border-dashed border-slate-600"></div>
           <svg class="absolute inset-0 w-full h-full pointer-events-none z-20">
             <defs>
               <marker id="arrowhead-disp" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
@@ -586,16 +591,18 @@
       `;
     }
 
+    /* モーダル内プレビュー (430px:490px の比率で拡大表示) */
     function renderLargeDisplayCourt(arrow) {
       if (!arrow) return '';
-      let line = `<line x1="${arrow.from.x}" y1="${arrow.from.y}" x2="${arrow.to.x}" y2="${arrow.to.y}" stroke="#f97316" stroke-width="3.5" marker-end="url(#arrowhead-large)" />`;
+      const scale = 320 / 430; // 0.744倍
+      let line = `<line x1="${arrow.from.x * scale}" y1="${arrow.from.y * scale}" x2="${arrow.to.x * scale}" y2="${arrow.to.y * scale}" stroke="#f97316" stroke-width="3.5" marker-end="url(#arrowhead-large)" />`;
       return `
-        <div class="relative w-[240px] h-[360px] mx-auto rounded-xl overflow-hidden bg-slate-900 border-2 border-slate-600 shadow-inner shrink-0">
-          <div class="absolute top-[15px] left-[35px] w-[170px] h-[280px] bg-sky-950 border-4 border-white box-border">
+        <div class="relative w-[320px] h-[364px] mx-auto rounded-xl overflow-hidden bg-slate-900 border-2 border-slate-600 shadow-inner shrink-0">
+          <div class="absolute top-[11.1px] left-[48.3px] w-[223.2px] h-[208.3px] bg-sky-950 border-4 border-white box-border">
             <div class="absolute top-0 bottom-0 left-1/2 w-[2px] bg-white -translate-x-1/2"></div>
             <div class="absolute top-1/2 -left-10 -right-10 h-[6px] bg-white/90 border-t border-b border-slate-400 -translate-y-1/2 z-10"></div>
           </div>
-          <div class="absolute top-[295px] left-0 w-[240px] h-[65px] border-t border-dashed border-slate-500 bg-slate-900/60"></div>
+          <div class="absolute top-[223.2px] left-0 w-[320px] h-[134px] border-t border-dashed border-slate-500 bg-slate-900/60"></div>
           <svg class="absolute inset-0 w-full h-full pointer-events-none z-20">
             <defs>
               <marker id="arrowhead-large" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
