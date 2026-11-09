@@ -10,11 +10,10 @@
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
     body { font-family: 'Noto Sans JP', sans-serif; }
     
-    /* レスポンシブ対応コート＆グリッド全体コンテナ (基準幅430px, 高さ490px) */
+    /* コート＆グリッド全体コンテナ (幅430px, 高さ490px) */
     .court-container {
       position: relative;
-      width: 100%;
-      max-width: 430px;
+      width: 430px;
       height: 490px;
       margin: 0 auto;
       background-color: #0f172a;
@@ -82,15 +81,6 @@
       transform: scale(1.4);
       box-shadow: 0 0 10px #ef4444;
     }
-
-    /* スマホなどの小画面向け自動縮小用メディアクエリ */
-    @media (max-width: 480px) {
-      .court-scale-wrapper {
-        transform: scale(0.82);
-        transform-origin: top center;
-        margin-bottom: -70px;
-      }
-    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
@@ -109,7 +99,7 @@
 
   <!-- 拡大詳細モーダル -->
   <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 overflow-y-auto">
-    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-6 w-full max-w-4xl my-8 shadow-2xl relative">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-4xl my-8 shadow-2xl relative">
       <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-700 w-10 h-10 rounded-full flex items-center justify-center transition-colors z-30">
         <i class="fas fa-times text-xl"></i>
       </button>
@@ -117,9 +107,9 @@
     </div>
   </div>
 
-  <div id="app" class="max-w-5xl mx-auto p-3 sm:p-6">
+  <div id="app" class="max-w-5xl mx-auto p-4 md:p-6">
     <!-- ヘッダー -->
-    <header class="flex justify-between items-center mb-6 sm:mb-8 border-b border-slate-700 pb-4">
+    <header class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
       <div class="flex items-center gap-3">
         <button onclick="toggleSidebar()" id="hamburger-btn" class="hidden text-slate-300 hover:text-white bg-slate-800 border border-slate-700 p-2.5 rounded-lg transition-colors shadow-md">
           <i class="fas fa-bars text-lg"></i>
@@ -127,12 +117,12 @@
         <div class="flex items-center gap-3 cursor-pointer" onclick="showHome()">
           <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">🏓</div>
           <div>
-            <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-red-500 to-blue-400 bg-clip-text text-transparent">卓球ノート</h1>
-            <p class="text-[10px] sm:text-xs text-slate-400">My Table Tennis Strategy & Tech Note</p>
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-red-500 to-blue-400 bg-clip-text text-transparent">卓球ノート</h1>
+            <p class="text-xs text-slate-400">My Table Tennis Strategy & Tech Note</p>
           </div>
         </div>
       </div>
-      <button onclick="openModal()" class="bg-red-600 hover:bg-red-500 text-white font-medium px-3 py-2 sm:px-4 sm:py-2 text-sm rounded-lg flex items-center gap-2 shadow-md transition-all">
+      <button onclick="openModal()" class="bg-red-600 hover:bg-red-500 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2 shadow-md transition-all">
         <i class="fas fa-plus"></i> 新規追加
       </button>
     </header>
@@ -141,10 +131,10 @@
   </div>
 
   <!-- 新規追加/編集モーダル -->
-  <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden z-50 overflow-y-auto">
-    <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 sm:p-6 w-full max-w-4xl my-4 sm:my-8 shadow-2xl">
+  <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 overflow-y-auto">
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 w-full max-w-4xl my-8 shadow-2xl">
       <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
-        <h3 id="modal-title" class="text-lg sm:text-xl font-bold text-slate-100">ノートを追加</h3>
+        <h3 id="modal-title" class="text-xl font-bold text-slate-100">ノートを追加</h3>
         <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
       </div>
       
@@ -153,7 +143,7 @@
         
         <div class="mb-4">
           <label class="block text-sm font-medium text-slate-300 mb-1">カテゴリー</label>
-          <select id="note-category" onchange="toggleCategoryFields()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 text-sm focus:outline-none focus:border-red-500" required>
+          <select id="note-category" onchange="toggleCategoryFields()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-red-500" required>
             <option value="tech">自分の持っている技術</option>
             <option value="pattern">システム構築</option>
             <option value="theory">卓球理論</option>
@@ -172,8 +162,8 @@
         </div>
 
         <!-- 技術用フィールド -->
-        <div id="tech-special-fields" class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 mb-6">
-          <div class="md:col-span-4 bg-slate-900/80 p-3 sm:p-4 rounded-xl border border-slate-700 space-y-3">
+        <div id="tech-special-fields" class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
+          <div class="md:col-span-4 bg-slate-900/80 p-4 rounded-xl border border-slate-700 space-y-3">
             <h4 class="text-sm font-bold text-red-400 border-b border-slate-700 pb-2 mb-2"><i class="fas fa-filter mr-1"></i> 4つの基本項目</h4>
             <div>
               <label class="block text-xs text-slate-400 mb-1">① 利き手</label>
@@ -207,7 +197,7 @@
             </div>
           </div>
 
-          <div class="md:col-span-8 bg-slate-900/80 p-3 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-between items-center overflow-x-auto">
+          <div class="md:col-span-8 bg-slate-900/80 p-4 rounded-xl border border-slate-700 flex flex-col justify-between items-center overflow-x-auto">
             <div class="w-full">
               <div class="flex justify-between items-center border-b border-slate-700 pb-2 mb-2">
                 <h4 class="text-sm font-bold text-blue-400"><i class="fas fa-map-marker-alt mr-1"></i> コース矢印設定</h4>
@@ -216,16 +206,14 @@
               <p class="text-xs text-slate-400 mb-3">点をタップして起点と終点を選び矢印を設定してください</p>
             </div>
 
-            <div class="court-scale-wrapper w-full flex justify-center">
-              <div class="court-container rounded overflow-hidden shadow-inner">
-                <div class="table-body">
-                  <div class="table-center-line"></div>
-                  <div class="table-net-line"></div>
-                </div>
-                <div class="out-body"></div>
-                <svg id="court-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20"></svg>
-                <div id="points-layer" class="absolute inset-0 pointer-events-auto"></div>
+            <div class="court-container rounded overflow-hidden shadow-inner">
+              <div class="table-body">
+                <div class="table-center-line"></div>
+                <div class="table-net-line"></div>
               </div>
+              <div class="out-body"></div>
+              <svg id="court-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20"></svg>
+              <div id="points-layer" class="absolute inset-0 pointer-events-auto"></div>
             </div>
 
             <div class="w-full flex justify-between text-[10px] text-slate-400 mt-2 px-2">
@@ -241,7 +229,7 @@
         </div>
 
         <!-- システム構築用フィールド -->
-        <div id="pattern-special-fields" class="bg-slate-900/80 p-3 sm:p-4 rounded-xl border border-slate-700 mb-6 hidden">
+        <div id="pattern-special-fields" class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 mb-6 hidden">
           <div class="flex justify-between items-center border-b border-slate-700 pb-2 mb-3">
             <h4 id="pattern-action-title" class="text-sm font-bold text-orange-400"><i class="fas fa-route mr-1"></i> 連続ラリーのシーン作成</h4>
             <div class="flex gap-2">
@@ -253,18 +241,16 @@
           </div>
           <p id="pattern-guide-text" class="text-xs text-slate-400 mb-3">1球ごとに「起点→終点」を選び、説明文を入れて追加していくことで連続シーンを作れます。</p>
 
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-4">
             <div class="md:col-span-6 flex flex-col items-center overflow-x-auto">
-              <div class="court-scale-wrapper w-full flex justify-center">
-                <div class="court-container rounded overflow-hidden shadow-inner">
-                  <div class="table-body">
-                    <div class="table-center-line"></div>
-                    <div class="table-net-line"></div>
-                  </div>
-                  <div class="out-body"></div>
-                  <svg id="pattern-court-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20"></svg>
-                  <div id="pattern-points-layer" class="absolute inset-0 pointer-events-auto"></div>
+              <div class="court-container rounded overflow-hidden shadow-inner">
+                <div class="table-body">
+                  <div class="table-center-line"></div>
+                  <div class="table-net-line"></div>
                 </div>
+                <div class="out-body"></div>
+                <svg id="pattern-court-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20"></svg>
+                <div id="pattern-points-layer" class="absolute inset-0 pointer-events-auto"></div>
               </div>
               <button type="button" onclick="clearPatternCurrentArrow()" class="mt-2 text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-slate-300">現在の矢印をリセット</button>
             </div>
@@ -313,17 +299,17 @@
 
         <div class="mb-4">
           <label class="block text-sm font-medium text-slate-300 mb-1" id="title-label">技術名</label>
-          <input type="text" id="note-title" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 text-sm focus:outline-none focus:border-red-500" required placeholder="例: フォアドライブ">
+          <input type="text" id="note-title" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-red-500" required placeholder="例: フォアドライブ">
         </div>
         
         <div class="mb-6">
           <label class="block text-sm font-medium text-slate-300 mb-1" id="content-label">詳細・メモ（打法・ポイント）</label>
-          <textarea id="note-content" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 text-sm focus:outline-none focus:border-red-500" required placeholder="ポイントや戦術のコツを入力..."></textarea>
+          <textarea id="note-content" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-red-500" required placeholder="ポイントや戦術のコツを入力..."></textarea>
         </div>
         
         <div class="flex justify-end gap-3">
-          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium">キャンセル</button>
-          <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-medium shadow-md">保存する</button>
+          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium">キャンセル</button>
+          <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium shadow-md">保存する</button>
         </div>
       </form>
     </div>
@@ -403,9 +389,9 @@
       }
     ];
 
-    let notes = JSON.parse(localStorage.getItem('tt_notes_v33')) || defaultNotes;
+    let notes = JSON.parse(localStorage.getItem('tt_notes_v32')) || defaultNotes;
     let currentCategory = null;
-    let currentTheorySub = null;
+    let currentTheorySub = null; // 卓球理論のサブカテゴリー用
     let techFilterStep = { hand: null, grip: null, surface: null, position: null };
     let selectedPointStart = null;
     let currentArrows = [];
@@ -438,7 +424,7 @@
     }
 
     function saveToStorage() {
-      localStorage.setItem('tt_notes_v33', JSON.stringify(notes));
+      localStorage.setItem('tt_notes_v32', JSON.stringify(notes));
     }
 
     function initCourtPoints(prefix = '') {
@@ -753,8 +739,8 @@
           <div class="mb-6 border-b border-slate-700 pb-4 flex justify-between items-start">
             <div>
               <span class="bg-purple-950 text-purple-300 text-xs px-3 py-1 rounded-full font-bold border border-purple-800">使用用具</span>
-              <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-100 mt-2">${escapeHtml(note.title)}</h3>
-              <p class="text-xs sm:text-sm text-purple-400 font-medium mt-1">メーカー: ${escapeHtml(note.eqMaker || '未設定')} | 参考価格: ${escapeHtml(note.eqPrice || '未設定')}</p>
+              <h3 class="text-3xl font-extrabold text-slate-100 mt-2">${escapeHtml(note.title)}</h3>
+              <p class="text-sm text-purple-400 font-medium mt-1">メーカー: ${escapeHtml(note.eqMaker || '未設定')} | 参考価格: ${escapeHtml(note.eqPrice || '未設定')}</p>
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -795,11 +781,11 @@
         content.innerHTML = `
           <div class="mb-6 border-b border-slate-700 pb-4">
             <span class="bg-blue-950 text-blue-300 text-xs px-3 py-1 rounded-full font-bold border border-blue-800">卓球理論 / ${sub.name}</span>
-            <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-100 mt-2">${escapeHtml(note.title)}</h3>
+            <h3 class="text-3xl font-extrabold text-slate-100 mt-2">${escapeHtml(note.title)}</h3>
           </div>
-          <div class="bg-slate-900 p-4 sm:p-6 rounded-2xl border border-blue-900/50 shadow-inner mb-6">
+          <div class="bg-slate-900 p-6 rounded-2xl border border-blue-900/50 shadow-inner mb-6">
             <h4 class="text-xs font-bold text-blue-400 block mb-3 uppercase tracking-wider"><i class="fas fa-lightbulb mr-1"></i> 理論・戦術メモ</h4>
-            <div class="text-slate-100 text-sm sm:text-base leading-loose whitespace-pre-wrap font-normal">${escapeHtml(note.content)}</div>
+            <div class="text-slate-100 text-base leading-loose whitespace-pre-wrap font-normal">${escapeHtml(note.content)}</div>
           </div>
           <div class="flex justify-between items-center text-xs text-slate-400 border-t border-slate-700 pt-3">
             <span>更新日: ${note.updatedAt}</span>
@@ -817,13 +803,13 @@
           content.innerHTML = `
             <div class="mb-4 text-center">
               <span class="bg-orange-950 text-orange-300 text-xs px-3 py-1 rounded-full font-bold border border-orange-800">システム構築</span>
-              <h3 class="text-xl sm:text-2xl font-bold text-slate-100 mt-2">${escapeHtml(note.title)}</h3>
+              <h3 class="text-2xl font-bold text-slate-100 mt-2">${escapeHtml(note.title)}</h3>
             </div>
             <div class="flex flex-col md:flex-row gap-6 items-center bg-slate-900/60 p-4 rounded-xl border border-slate-700 mb-4">
-              <div class="shrink-0 scale-90 sm:scale-100">${renderLargeDisplayCourt(scene.arrow)}</div>
+              <div class="shrink-0">${renderLargeDisplayCourt(scene.arrow)}</div>
               <div class="flex-1 space-y-3">
                 <div class="inline-block bg-orange-600 text-white text-xs px-2.5 py-1 rounded-md font-bold">シーン ${activeIdx + 1} / ${note.scenes.length}</div>
-                <p class="text-orange-200 font-medium text-sm sm:text-base bg-slate-800 p-3 rounded-lg border border-orange-500/40">${escapeHtml(scene.desc)}</p>
+                <p class="text-orange-200 font-medium text-base bg-slate-800 p-3 rounded-lg border border-orange-500/40">${escapeHtml(scene.desc)}</p>
                 <p class="text-slate-300 text-xs leading-relaxed">${escapeHtml(note.content)}</p>
               </div>
             </div>
@@ -864,7 +850,7 @@
               </div>
             ` : ''}
           </div>
-          <div class="scale-90 sm:scale-100">${firstArrow ? renderLargeDisplayCourt(firstArrow) : ''}</div>
+          ${firstArrow ? renderLargeDisplayCourt(firstArrow) : ''}
           <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/60 mb-4 mt-3">
             <p class="text-slate-200 text-sm whitespace-pre-wrap leading-relaxed">${escapeHtml(note.content)}</p>
           </div>
@@ -892,23 +878,23 @@
       document.getElementById('hamburger-btn').classList.add('hidden');
       const main = document.getElementById('main-content');
       main.innerHTML = `
-        <div class="mb-6 sm:mb-8 text-center md:text-left">
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-100 mb-2">ダッシュボード</h2>
-          <p class="text-xs sm:text-sm text-slate-400">項目を選択してノートを確認・編集できます</p>
+        <div class="mb-8 text-center md:text-left">
+          <h2 class="text-3xl font-extrabold text-slate-100 mb-2">ダッシュボード</h2>
+          <p class="text-slate-400">項目を選択してノートを確認・編集できます</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           ${categories.map(cat => {
             const count = notes.filter(n => n.category === cat.id).length;
             return `
-              <div onclick="showCategory('${cat.id}')" class="bg-slate-800/80 border border-slate-700/80 hover:border-slate-500 rounded-xl p-5 sm:p-6 cursor-pointer transform hover:-translate-y-1 transition-all shadow-xl group">
-                <div class="flex items-center justify-between mb-3 sm:mb-4">
-                  <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br ${cat.color} flex items-center justify-center text-white text-lg sm:text-xl shadow-md group-hover:scale-110 transition-transform">
+              <div onclick="showCategory('${cat.id}')" class="bg-slate-800/80 border border-slate-700/80 hover:border-slate-500 rounded-xl p-6 cursor-pointer transform hover:-translate-y-1 transition-all shadow-xl group">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="w-12 h-12 rounded-lg bg-gradient-to-br ${cat.color} flex items-center justify-center text-white text-xl shadow-md group-hover:scale-110 transition-transform">
                     <i class="fas ${cat.icon}"></i>
                   </div>
                   <span class="bg-slate-900 border border-slate-700 text-slate-300 text-xs px-2.5 py-1 rounded-full font-bold">${count} 件</span>
                 </div>
-                <h3 class="text-lg sm:text-xl font-bold text-slate-100 mb-1.5 sm:mb-2 group-hover:text-red-400 transition-colors">${cat.name}</h3>
-                <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">${cat.desc}</p>
+                <h3 class="text-xl font-bold text-slate-100 mb-2 group-hover:text-red-400 transition-colors">${cat.name}</h3>
+                <p class="text-sm text-slate-400 leading-relaxed">${cat.desc}</p>
               </div>
             `;
           }).join('')}
@@ -934,8 +920,10 @@
       const cat = categories.find(c => c.id === currentCategory);
       const main = document.getElementById('main-content');
 
+      // 卓球理論カテゴリの場合
       if (currentCategory === 'theory') {
         if (!currentTheorySub) {
+          // 理論の大枠カード3つを表示する階層
           main.innerHTML = `
             <div class="flex items-center gap-2 text-sm text-slate-400 mb-4">
               <span class="cursor-pointer hover:text-slate-200" onclick="showHome()">ホーム</span>
@@ -943,21 +931,21 @@
               <span class="text-slate-200 font-medium">${cat.name}</span>
             </div>
             <div class="mb-6">
-              <h2 class="text-xl sm:text-2xl font-bold text-slate-100 mb-1">卓球理論・思考の分類</h2>
-              <p class="text-xs sm:text-sm text-slate-400">確認したい理論のテーマを選択してください</p>
+              <h2 class="text-2xl font-bold text-slate-100 mb-1">卓球理論・思考の分類</h2>
+              <p class="text-sm text-slate-400">確認したい理論のテーマを選択してください</p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               ${theorySubCategories.map(sub => {
                 const count = notes.filter(n => n.category === 'theory' && (n.theorySub || 'control') === sub.id).length;
                 return `
-                  <div onclick="selectTheorySub('${sub.id}')" class="bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-xl p-5 sm:p-6 cursor-pointer transform hover:-translate-y-1 transition-all shadow-xl group">
-                    <div class="flex items-center justify-between mb-3 sm:mb-4">
-                      <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br ${sub.color} flex items-center justify-center text-white text-lg sm:text-xl shadow-md group-hover:scale-110 transition-transform">
+                  <div onclick="selectTheorySub('${sub.id}')" class="bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-xl p-6 cursor-pointer transform hover:-translate-y-1 transition-all shadow-xl group">
+                    <div class="flex items-center justify-between mb-4">
+                      <div class="w-12 h-12 rounded-lg bg-gradient-to-br ${sub.color} flex items-center justify-center text-white text-xl shadow-md group-hover:scale-110 transition-transform">
                         <i class="fas ${sub.icon}"></i>
                       </div>
                       <span class="bg-slate-900 border border-slate-700 text-blue-300 text-xs px-2.5 py-1 rounded-full font-bold">${count} メモ</span>
                     </div>
-                    <h3 class="text-base sm:text-lg font-bold text-slate-100 mb-1.5 sm:mb-2 group-hover:text-blue-400 transition-colors">${sub.name}</h3>
+                    <h3 class="text-lg font-bold text-slate-100 mb-2 group-hover:text-blue-400 transition-colors">${sub.name}</h3>
                     <p class="text-xs text-slate-400 leading-relaxed">${sub.desc}</p>
                   </div>
                 `;
@@ -965,6 +953,7 @@
             </div>
           `;
         } else {
+          // 選択された理論テーマ内のノート一覧
           const sub = theorySubCategories.find(s => s.id === currentTheorySub);
           const filtered = notes.filter(n => n.category === 'theory' && (n.theorySub || 'control') === currentTheorySub);
           main.innerHTML = `
@@ -975,12 +964,12 @@
               <i class="fas fa-chevron-right text-xs"></i>
               <span class="text-slate-200 font-medium">${sub.name}</span>
             </div>
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div class="flex items-center gap-3">
                 <button onclick="currentTheorySub=null; renderCategoryView();" class="text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded-lg text-slate-300"><i class="fas fa-arrow-left"></i></button>
-                <h2 class="text-xl sm:text-2xl font-bold text-slate-100">${sub.name}</h2>
+                <h2 class="text-2xl font-bold text-slate-100">${sub.name}</h2>
               </div>
-              <input type="text" id="search-input" oninput="filterNotes()" placeholder="検索キーワードを入力..." class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 text-sm focus:outline-none focus:border-red-500 w-full sm:w-64">
+              <input type="text" id="search-input" oninput="filterNotes()" placeholder="検索キーワードを入力..." class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 text-sm focus:outline-none focus:border-red-500 w-full md:w-64">
             </div>
             <div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">${renderNotesList(filtered)}</div>
           `;
@@ -996,12 +985,12 @@
             ${techFilterStep.surface ? `<i class="fas fa-chevron-right text-xs"></i><span class="text-slate-200 font-medium">${techFilterStep.surface}</span>` : ''}
             ${techFilterStep.position ? `<i class="fas fa-chevron-right text-xs"></i><span class="text-slate-200 font-medium">${techFilterStep.position}</span>` : ''}
           </div>
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-lg bg-gradient-to-br ${cat.color} flex items-center justify-center text-white text-lg shadow-md"><i class="fas ${cat.icon}"></i></div>
-              <h2 class="text-xl sm:text-2xl font-bold text-slate-100">${cat.name}</h2>
+              <h2 class="text-2xl font-bold text-slate-100">${cat.name}</h2>
             </div>
-            <input type="text" id="search-input" oninput="filterNotes()" placeholder="検索キーワードを入力..." class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 text-sm focus:outline-none focus:border-red-500 w-full sm:w-64">
+            <input type="text" id="search-input" oninput="filterNotes()" placeholder="検索キーワードを入力..." class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 text-sm focus:outline-none focus:border-red-500 w-full md:w-64">
           </div>
           <div id="tech-selection-container">${renderTechSelectionOrList()}</div>
         `;
@@ -1013,12 +1002,12 @@
             <i class="fas fa-chevron-right text-xs"></i>
             <span class="text-slate-200 font-medium">${cat.name}</span>
           </div>
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-lg bg-gradient-to-br ${cat.color} flex items-center justify-center text-white text-lg shadow-md"><i class="fas ${cat.icon}"></i></div>
-              <h2 class="text-xl sm:text-2xl font-bold text-slate-100">${cat.name}</h2>
+              <h2 class="text-2xl font-bold text-slate-100">${cat.name}</h2>
             </div>
-            <input type="text" id="search-input" oninput="filterNotes()" placeholder="検索キーワードを入力..." class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 text-sm focus:outline-none focus:border-red-500 w-full sm:w-64">
+            <input type="text" id="search-input" oninput="filterNotes()" placeholder="検索キーワードを入力..." class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 text-sm focus:outline-none focus:border-red-500 w-full md:w-64">
           </div>
           <div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">${renderNotesList(filtered)}</div>
         `;
@@ -1035,33 +1024,33 @@
         html += `<div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">${renderNotesList(list)}</div>`;
       } else if (techFilterStep.surface) {
         html += `<button onclick="techFilterStep.surface=null; renderCategoryView();" class="mb-4 text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded text-slate-300 flex items-center gap-1"><i class="fas fa-arrow-left"></i> ラバー種類に戻る</button>`;
-        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">④ ポジションを選んでください</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">`;
+        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">④ ポジションを選んでください</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-4">`;
         ['台上', '前陣', '中陣', '後陣'].forEach(pos => {
           const count = notes.filter(n => n.category === 'tech' && n.techDetails && n.techDetails.hand === techFilterStep.hand && n.techDetails.grip === techFilterStep.grip && n.techDetails.surface === techFilterStep.surface && n.techDetails.position === pos).length;
-          html += `<div onclick="techFilterStep.position='${pos}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-4 sm:p-5 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-base sm:text-lg font-bold text-slate-100 mb-1">${pos}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
+          html += `<div onclick="techFilterStep.position='${pos}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-5 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-lg font-bold text-slate-100 mb-1">${pos}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
         });
         html += `</div>`;
       } else if (techFilterStep.grip) {
         html += `<button onclick="techFilterStep.grip=null; renderCategoryView();" class="mb-4 text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded text-slate-300 flex items-center gap-1"><i class="fas fa-arrow-left"></i> グリップに戻る</button>`;
-        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">③ ラバー種類を選んでください</h3><div class="grid grid-cols-2 gap-3 sm:gap-4">`;
+        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">③ ラバー種類を選んでください</h3><div class="grid grid-cols-2 md:grid-cols-2 gap-4">`;
         ['裏ソフト', '粒高'].forEach(surf => {
           const count = notes.filter(n => n.category === 'tech' && n.techDetails && n.techDetails.hand === techFilterStep.hand && n.techDetails.grip === techFilterStep.grip && n.techDetails.surface === surf).length;
-          html += `<div onclick="techFilterStep.surface='${surf}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-5 sm:p-6 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-lg sm:text-xl font-bold text-slate-100 mb-1">${surf}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
+          html += `<div onclick="techFilterStep.surface='${surf}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-6 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-xl font-bold text-slate-100 mb-1">${surf}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
         });
         html += `</div>`;
       } else if (techFilterStep.hand) {
         html += `<button onclick="techFilterStep.hand=null; renderCategoryView();" class="mb-4 text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded text-slate-300 flex items-center gap-1"><i class="fas fa-arrow-left"></i> 利き手に戻る</button>`;
-        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">② グリップを選んでください</h3><div class="grid grid-cols-2 gap-3 sm:gap-4">`;
+        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">② グリップを選んでください</h3><div class="grid grid-cols-2 md:grid-cols-2 gap-4">`;
         ['ペン', 'シェーク'].forEach(grip => {
           const count = notes.filter(n => n.category === 'tech' && n.techDetails && n.techDetails.hand === techFilterStep.hand && n.techDetails.grip === grip).length;
-          html += `<div onclick="techFilterStep.grip='${grip}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-5 sm:p-6 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-lg sm:text-xl font-bold text-slate-100 mb-1">${grip}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
+          html += `<div onclick="techFilterStep.grip='${grip}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-6 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-xl font-bold text-slate-100 mb-1">${grip}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
         });
         html += `</div>`;
       } else {
-        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">① 利き手を選んでください</h3><div class="grid grid-cols-2 gap-3 sm:gap-4">`;
+        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">① 利き手を選んでください</h3><div class="grid grid-cols-2 md:grid-cols-2 gap-4">`;
         ['右手', '左手'].forEach(hand => {
           const count = notes.filter(n => n.category === 'tech' && n.techDetails && n.techDetails.hand === hand).length;
-          html += `<div onclick="techFilterStep.hand='${hand}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-5 sm:p-6 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-lg sm:text-xl font-bold text-slate-100 mb-1">${hand}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
+          html += `<div onclick="techFilterStep.hand='${hand}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-6 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-xl font-bold text-slate-100 mb-1">${hand}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
         });
         html += `</div>`;
       }
@@ -1070,7 +1059,7 @@
 
     function renderNotesList(list) {
       if (list.length === 0) {
-        return `<div class="col-span-2 text-center py-12 text-slate-500 bg-slate-800/40 rounded-xl border border-slate-800 text-xs sm:text-sm">該当するノートがありません。「新規追加」から登録してください。</div>`;
+        return `<div class="col-span-2 text-center py-12 text-slate-500 bg-slate-800/40 rounded-xl border border-slate-800">該当するノートがありません。「新規追加」から登録してください。</div>`;
       }
       return list.map(n => {
         let displayArrow = null;
@@ -1078,10 +1067,10 @@
         else if (n.scenes && n.scenes.length > 0) displayArrow = n.scenes[0].arrow;
 
         return `
-          <div onclick="openDetailModal('${n.id}')" class="bg-slate-800/90 border border-slate-700/80 hover:border-red-500/80 rounded-xl p-4 sm:p-5 shadow-lg flex flex-col justify-between cursor-pointer transform hover:-translate-y-1 transition-all group">
+          <div onclick="openDetailModal('${n.id}')" class="bg-slate-800/90 border border-slate-700/80 hover:border-red-500/80 rounded-xl p-5 shadow-lg flex flex-col justify-between cursor-pointer transform hover:-translate-y-1 transition-all group">
             <div>
               <div class="flex justify-between items-start mb-2">
-                <h4 class="text-base sm:text-lg font-bold text-slate-100 group-hover:text-red-400 transition-colors">${escapeHtml(n.title)}</h4>
+                <h4 class="text-lg font-bold text-slate-100 group-hover:text-red-400 transition-colors">${escapeHtml(n.title)}</h4>
                 <div class="flex items-center gap-2" onclick="event.stopPropagation()">
                   <button onclick="editNote('${n.id}')" class="text-slate-400 hover:text-blue-400 text-sm p-1"><i class="fas fa-pen"></i></button>
                   <button onclick="deleteNote('${n.id}')" class="text-slate-400 hover:text-red-400 text-sm p-1"><i class="fas fa-trash"></i></button>
@@ -1103,9 +1092,9 @@
 
               ${displayArrow ? renderDisplayCourt([displayArrow]) : ''}
 
-              <p class="text-slate-300 text-xs sm:text-sm line-clamp-2 leading-relaxed mb-4">${escapeHtml(n.content)}</p>
+              <p class="text-slate-300 text-sm line-clamp-2 leading-relaxed mb-4">${escapeHtml(n.content)}</p>
             </div>
-            <div class="flex justify-between items-center text-[11px] sm:text-xs text-slate-500 border-t border-slate-700/50 pt-3">
+            <div class="flex justify-between items-center text-xs text-slate-500 border-t border-slate-700/50 pt-3">
               <span>更新日: ${n.updatedAt}</span>
               <span class="text-red-400 font-medium">詳細を見る →</span>
             </div>
