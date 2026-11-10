@@ -99,6 +99,16 @@
         left: 0;
       }
     }
+
+    /* ドラッグ＆ドロップ中のスタイル */
+    .note-card.dragging {
+      opacity: 0.4;
+      border: 2px dashed #f97316;
+    }
+    .note-card.drag-over {
+      border-color: #38bdf8;
+      background-color: rgba(56, 189, 248, 0.1);
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
@@ -140,9 +150,14 @@
           </div>
         </div>
       </div>
-      <button onclick="openModal()" class="bg-red-600 hover:bg-red-500 text-white font-medium px-3 py-2 sm:px-4 sm:py-2 text-sm rounded-lg flex items-center gap-2 shadow-md transition-all">
-        <i class="fas fa-plus"></i> 新規追加
-      </button>
+      <div class="flex items-center gap-2">
+        <button id="edit-mode-btn" onclick="toggleEditMode()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-medium px-3 py-2 sm:px-4 sm:py-2 text-sm rounded-lg flex items-center gap-2 shadow-md transition-all">
+          <i class="fas fa-edit"></i> <span id="edit-mode-text">編集</span>
+        </button>
+        <button onclick="openModal()" class="bg-red-600 hover:bg-red-500 text-white font-medium px-3 py-2 sm:px-4 sm:py-2 text-sm rounded-lg flex items-center gap-2 shadow-md transition-all">
+          <i class="fas fa-plus"></i> 新規追加
+        </button>
+      </div>
     </header>
 
     <main id="main-content"></main>
@@ -179,10 +194,10 @@
           </select>
         </div>
 
-        <!-- 技術用フィールド -->
+        <!-- 技術用フィールド（5項目） -->
         <div id="tech-special-fields" class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 mb-6">
           <div class="md:col-span-4 bg-slate-900/80 p-3 sm:p-4 rounded-xl border border-slate-700 space-y-3">
-            <h4 class="text-sm font-bold text-red-400 border-b border-slate-700 pb-2 mb-2"><i class="fas fa-filter mr-1"></i> 4つの基本項目</h4>
+            <h4 class="text-sm font-bold text-red-400 border-b border-slate-700 pb-2 mb-2"><i class="fas fa-filter mr-1"></i> 5つの基本項目</h4>
             <div>
               <label class="block text-xs text-slate-400 mb-1">① 利き手</label>
               <select id="tech-hand" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm">
@@ -205,7 +220,14 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs text-slate-400 mb-1">④ ポジション</label>
+              <label class="block text-xs text-slate-400 mb-1">④ 使用面</label>
+              <select id="tech-side" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm">
+                <option value="フォア">フォア</option>
+                <option value="バック">バック</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">⑤ ポジション</label>
               <select id="tech-position" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm">
                 <option value="台上">台上</option>
                 <option value="前陣">前陣</option>
@@ -343,7 +365,7 @@
 
   <script>
     const categories = [
-      { id: 'tech', name: '自分の持っている技術', icon: 'fa-ping-pong-paddle-ball', color: 'from-red-500 to-rose-600', desc: '4つの項目から選び、一覧表示とハンバーガーメニューの目次で確認' },
+      { id: 'tech', name: '自分の持っている技術', icon: 'fa-ping-pong-paddle-ball', color: 'from-red-500 to-rose-600', desc: '5つの項目から絞り込み検索。一覧表示と技術目次で確認' },
       { id: 'pattern', name: 'システム構築', icon: 'fa-diagram-project', color: 'from-orange-500 to-amber-600', desc: '連続するラリーやコース取りの流れ' },
       { id: 'theory', name: '卓球理論', icon: 'fa-brain', color: 'from-blue-500 to-indigo-600', desc: '領域制御理論・ペン粒思考・参考にしている理論など' },
       { id: 'equipment', name: '使用用具', icon: 'fa-sliders', color: 'from-purple-500 to-violet-600', desc: 'ラケット、ラバーの組み合わせと用具の特徴' }
@@ -408,17 +430,17 @@
         id: '6', 
         category: 'tech', 
         title: 'フォアドライブ', 
-        techDetails: { hand: '右手', grip: 'ペン', surface: '裏ソフト', position: '前陣' },
+        techDetails: { hand: '右手', grip: 'ペン', surface: '裏ソフト', side: 'フォア', position: '前陣' },
         arrows: [{ from: {x: 215, y: 258.33}, to: {x: 65, y: 15} }, { from: {x: 215, y: 258.33}, to: {x: 365, y: 15} }],
         content: 'コンパクトなスイングで回転をしっかりかける。相手クロスおよびストレートへの打ち分け。', 
         updatedAt: '2026-11-06' 
       }
     ];
 
-    let notes = JSON.parse(localStorage.getItem('tt_notes_v35')) || defaultNotes;
+    let notes = JSON.parse(localStorage.getItem('tt_notes_v37')) || defaultNotes;
     let currentCategory = null;
     let currentTheorySub = null;
-    let techFilterStep = { hand: null, grip: null, surface: null, position: null };
+    let techFilterStep = { hand: null, grip: null, surface: null, side: null, position: null };
     let selectedPointStart = null;
     let currentArrows = [];
 
@@ -426,6 +448,25 @@
     let patternSelectedStart = null;
     let patternCurrentArrow = null;
     let editingSceneIndex = null;
+
+    let isEditMode = false;
+    let draggedNoteId = null;
+
+    function toggleEditMode() {
+      isEditMode = !isEditMode;
+      const btn = document.getElementById('edit-mode-btn');
+      const text = document.getElementById('edit-mode-text');
+      if (isEditMode) {
+        btn.classList.add('bg-red-600', 'text-white', 'border-red-500');
+        btn.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+        text.innerText = '完了';
+      } else {
+        btn.classList.remove('bg-red-600', 'text-white', 'border-red-500');
+        btn.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+        text.innerText = '編集';
+      }
+      renderCategoryView();
+    }
 
     function getAllPointsCoordinates() {
       const points = [];
@@ -450,7 +491,7 @@
     }
 
     function saveToStorage() {
-      localStorage.setItem('tt_notes_v35', JSON.stringify(notes));
+      localStorage.setItem('tt_notes_v37', JSON.stringify(notes));
     }
 
     function initCourtPoints(prefix = '') {
@@ -643,7 +684,6 @@
       `).join('');
     }
 
-    /* 複数の矢印を一覧カード上にまとめて描画するよう修正 */
     function renderDisplayCourt(arrows) {
       if (!arrows || arrows.length === 0) return '';
       const scaleW = 215 / 430;
@@ -664,7 +704,6 @@
       `;
     }
 
-    /* 拡大詳細画面にて複数の矢印をまとめて描画するよう修正 */
     function renderLargeDisplayCourt(arrows) {
       if (!arrows) return '';
       const arrowList = Array.isArray(arrows) ? arrows : [arrows];
@@ -697,6 +736,7 @@
       }
     }
 
+    /* 5項目（利き手・グリップ・ラバー・使用面・ポジション）対応の目次 */
     function updateSidebarAccordion() {
       const container = document.getElementById('sidebar-content');
       const techNotes = notes.filter(n => n.category === 'tech');
@@ -706,34 +746,42 @@
       }
       const tree = {};
       techNotes.forEach(n => {
-        const d = n.techDetails || { hand: '右手', grip: 'ペン', surface: '裏ソフト', position: '前陣' };
+        const d = n.techDetails || { hand: '右手', grip: 'ペン', surface: '裏ソフト', side: 'フォア', position: '前陣' };
+        const side = d.side || 'フォア';
         if (!tree[d.hand]) tree[d.hand] = {};
         if (!tree[d.hand][d.grip]) tree[d.hand][d.grip] = {};
         if (!tree[d.hand][d.grip][d.surface]) tree[d.hand][d.grip][d.surface] = {};
-        if (!tree[d.hand][d.grip][d.surface][d.position]) tree[d.hand][d.grip][d.surface][d.position] = [];
-        tree[d.hand][d.grip][d.surface][d.position].push(n);
+        if (!tree[d.hand][d.grip][d.surface][side]) tree[d.hand][d.grip][d.surface][side] = {};
+        if (!tree[d.hand][d.grip][d.surface][side][d.position]) tree[d.hand][d.grip][d.surface][side][d.position] = [];
+        tree[d.hand][d.grip][d.surface][side][d.position].push(n);
       });
 
       let html = '';
       for (const hand in tree) {
         html += `<div class="border border-slate-700 rounded-lg overflow-hidden bg-slate-900/50">
           <button onclick="toggleAccordionNode(this)" class="w-full flex justify-between items-center p-3 text-sm font-bold text-slate-200 hover:bg-slate-700/50"><span>✋ ${hand}</span><i class="fas fa-chevron-down text-xs transition-transform"></i></button>
-          <div class="hidden p-2 pl-4 space-y-2 border-t border-slate-700/50 bg-slate-900/30">`;
+          <div class="hidden p-2 pl-3 space-y-2 border-t border-slate-700/50 bg-slate-900/30">`;
         for (const grip in tree[hand]) {
           html += `<div class="border border-slate-700/60 rounded overflow-hidden">
             <button onclick="toggleAccordionNode(this)" class="w-full flex justify-between items-center p-2 text-xs font-bold text-slate-300 hover:bg-slate-700/50"><span>🏓 ${grip}</span><i class="fas fa-chevron-down text-xs transition-transform"></i></button>
-            <div class="hidden p-2 pl-4 space-y-2 border-t border-slate-700/50">`;
+            <div class="hidden p-2 pl-3 space-y-2 border-t border-slate-700/50">`;
           for (const surf in tree[hand][grip]) {
             html += `<div class="border border-slate-700/40 rounded overflow-hidden">
               <button onclick="toggleAccordionNode(this)" class="w-full flex justify-between items-center p-2 text-xs font-medium text-slate-300 hover:bg-slate-700/50"><span>🔴 ${surf}</span><i class="fas fa-chevron-down text-xs transition-transform"></i></button>
-              <div class="hidden p-2 pl-4 space-y-2 border-t border-slate-700/30">`;
-            for (const pos in tree[hand][grip][surf]) {
+              <div class="hidden p-2 pl-3 space-y-2 border-t border-slate-700/30">`;
+            for (const side in tree[hand][grip][surf]) {
               html += `<div class="border border-slate-700/30 rounded overflow-hidden">
-                <button onclick="toggleAccordionNode(this)" class="w-full flex justify-between items-center p-1.5 text-[11px] font-medium text-blue-300 hover:bg-slate-700/50"><span>📍 ${pos}</span><i class="fas fa-chevron-down text-xs transition-transform"></i></button>
+                <button onclick="toggleAccordionNode(this)" class="w-full flex justify-between items-center p-1.5 text-xs font-medium text-orange-300 hover:bg-slate-700/50"><span>🎯 ${side}</span><i class="fas fa-chevron-down text-xs transition-transform"></i></button>
                 <div class="hidden p-1.5 pl-3 space-y-1 border-t border-slate-700/20">`;
-              tree[hand][grip][surf][pos].forEach(note => {
-                html += `<div onclick="openDetailModal('${note.id}')" class="text-xs text-slate-300 hover:text-red-400 cursor-pointer py-1 truncate">• ${escapeHtml(note.title)}</div>`;
-              });
+              for (const pos in tree[hand][grip][surf][side]) {
+                html += `<div class="border border-slate-700/20 rounded overflow-hidden">
+                  <button onclick="toggleAccordionNode(this)" class="w-full flex justify-between items-center p-1 text-[11px] font-medium text-blue-300 hover:bg-slate-700/50"><span>📍 ${pos}</span><i class="fas fa-chevron-down text-xs transition-transform"></i></button>
+                  <div class="hidden p-1 pl-3 space-y-1 border-t border-slate-700/10">`;
+                tree[hand][grip][surf][side][pos].forEach(note => {
+                  html += `<div onclick="openDetailModal('${note.id}')" class="text-xs text-slate-300 hover:text-red-400 cursor-pointer py-1 truncate">• ${escapeHtml(note.title)}</div>`;
+                });
+                html += `</div></div>`;
+              }
               html += `</div></div>`;
             }
             html += `</div></div>`;
@@ -875,6 +923,7 @@
                 <span>✋ ${note.techDetails.hand}</span>
                 <span>🏓 ${note.techDetails.grip}</span>
                 <span>🔴 ${note.techDetails.surface}</span>
+                <span>🎯 ${note.techDetails.side || 'フォア'}</span>
                 <span>📍 ${note.techDetails.position}</span>
               </div>
             ` : ''}
@@ -903,7 +952,7 @@
     function showHome() {
       currentCategory = null;
       currentTheorySub = null;
-      techFilterStep = { hand: null, grip: null, surface: null, position: null };
+      techFilterStep = { hand: null, grip: null, surface: null, side: null, position: null };
       document.getElementById('hamburger-btn').classList.add('hidden');
       const main = document.getElementById('main-content');
       main.innerHTML = `
@@ -934,7 +983,7 @@
     function showCategory(catId) {
       currentCategory = catId;
       currentTheorySub = null;
-      techFilterStep = { hand: null, grip: null, surface: null, position: null };
+      techFilterStep = { hand: null, grip: null, surface: null, side: null, position: null };
       if (catId === 'tech') document.getElementById('hamburger-btn').classList.remove('hidden');
       else document.getElementById('hamburger-btn').classList.add('hidden');
       renderCategoryView();
@@ -1002,13 +1051,14 @@
         }
       } else if (currentCategory === 'tech') {
         main.innerHTML = `
-          <div class="flex items-center gap-2 text-sm text-slate-400 mb-4">
+          <div class="flex items-center gap-2 text-sm text-slate-400 mb-4 flex-wrap">
             <span class="cursor-pointer hover:text-slate-200" onclick="showHome()">ホーム</span>
             <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-slate-200 font-medium">${cat.name}</span>
-            ${techFilterStep.hand ? `<i class="fas fa-chevron-right text-xs"></i><span class="text-slate-200 font-medium">${techFilterStep.hand}</span>` : ''}
-            ${techFilterStep.grip ? `<i class="fas fa-chevron-right text-xs"></i><span class="text-slate-200 font-medium">${techFilterStep.grip}</span>` : ''}
-            ${techFilterStep.surface ? `<i class="fas fa-chevron-right text-xs"></i><span class="text-slate-200 font-medium">${techFilterStep.surface}</span>` : ''}
+            <span class="cursor-pointer hover:text-slate-200" onclick="resetTechFilter(); renderCategoryView();">${cat.name}</span>
+            ${techFilterStep.hand ? `<i class="fas fa-chevron-right text-xs"></i><span class="cursor-pointer hover:text-slate-200" onclick="setTechFilterStep('hand', '${techFilterStep.hand}')">${techFilterStep.hand}</span>` : ''}
+            ${techFilterStep.grip ? `<i class="fas fa-chevron-right text-xs"></i><span class="cursor-pointer hover:text-slate-200" onclick="setTechFilterStep('grip', '${techFilterStep.grip}')">${techFilterStep.grip}</span>` : ''}
+            ${techFilterStep.surface ? `<i class="fas fa-chevron-right text-xs"></i><span class="cursor-pointer hover:text-slate-200" onclick="setTechFilterStep('surface', '${techFilterStep.surface}')">${techFilterStep.surface}</span>` : ''}
+            ${techFilterStep.side ? `<i class="fas fa-chevron-right text-xs"></i><span class="cursor-pointer hover:text-slate-200" onclick="setTechFilterStep('side', '${techFilterStep.side}')">${techFilterStep.side}</span>` : ''}
             ${techFilterStep.position ? `<i class="fas fa-chevron-right text-xs"></i><span class="text-slate-200 font-medium">${techFilterStep.position}</span>` : ''}
           </div>
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -1018,7 +1068,7 @@
             </div>
             <input type="text" id="search-input" oninput="filterNotes()" placeholder="検索キーワードを入力..." class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 text-sm focus:outline-none focus:border-red-500 w-full sm:w-64">
           </div>
-          <div id="tech-selection-container">${renderTechSelectionOrList()}</div>
+          <div id="tech-selection-container">${renderTechSelectionAndList()}</div>
         `;
       } else {
         const filtered = notes.filter(n => n.category === currentCategory);
@@ -1040,46 +1090,131 @@
       }
     }
 
-    function renderTechSelectionOrList() {
+    function resetTechFilter() {
+      techFilterStep = { hand: null, grip: null, surface: null, side: null, position: null };
+    }
+
+    function setTechFilterStep(stepKey, val) {
+      if (stepKey === 'hand') { techFilterStep = { hand: val, grip: null, surface: null, side: null, position: null }; }
+      else if (stepKey === 'grip') { techFilterStep.grip = val; techFilterStep.surface = null; techFilterStep.side = null; techFilterStep.position = null; }
+      else if (stepKey === 'surface') { techFilterStep.surface = val; techFilterStep.side = null; techFilterStep.position = null; }
+      else if (stepKey === 'side') { techFilterStep.side = val; techFilterStep.position = null; }
+      else if (stepKey === 'position') { techFilterStep.position = val; }
+      renderCategoryView();
+    }
+
+    /* どの段階でもその条件に合致するノート一覧と次の選択要素を併せて描画する関数 */
+    function renderTechSelectionAndList() {
       let html = '';
-      if (techFilterStep.position) {
-        html += `<button onclick="techFilterStep.position=null; renderCategoryView();" class="mb-4 text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded text-slate-300 flex items-center gap-1"><i class="fas fa-arrow-left"></i> ポジション選択に戻る</button>`;
-        const list = notes.filter(n => n.category === 'tech' && n.techDetails && 
-          n.techDetails.hand === techFilterStep.hand && n.techDetails.grip === techFilterStep.grip && 
-          n.techDetails.surface === techFilterStep.surface && n.techDetails.position === techFilterStep.position);
-        html += `<div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">${renderNotesList(list)}</div>`;
-      } else if (techFilterStep.surface) {
-        html += `<button onclick="techFilterStep.surface=null; renderCategoryView();" class="mb-4 text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded text-slate-300 flex items-center gap-1"><i class="fas fa-arrow-left"></i> ラバー種類に戻る</button>`;
-        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">④ ポジションを選んでください</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">`;
-        ['台上', '前陣', '中陣', '後陣'].forEach(pos => {
-          const count = notes.filter(n => n.category === 'tech' && n.techDetails && n.techDetails.hand === techFilterStep.hand && n.techDetails.grip === techFilterStep.grip && n.techDetails.surface === techFilterStep.surface && n.techDetails.position === pos).length;
-          html += `<div onclick="techFilterStep.position='${pos}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-4 sm:p-5 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-base sm:text-lg font-bold text-slate-100 mb-1">${pos}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
-        });
-        html += `</div>`;
-      } else if (techFilterStep.grip) {
-        html += `<button onclick="techFilterStep.grip=null; renderCategoryView();" class="mb-4 text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded text-slate-300 flex items-center gap-1"><i class="fas fa-arrow-left"></i> グリップに戻る</button>`;
-        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">③ ラバー種類を選んでください</h3><div class="grid grid-cols-2 gap-3 sm:gap-4">`;
-        ['裏ソフト', '粒高'].forEach(surf => {
-          const count = notes.filter(n => n.category === 'tech' && n.techDetails && n.techDetails.hand === techFilterStep.hand && n.techDetails.grip === techFilterStep.grip && n.techDetails.surface === surf).length;
-          html += `<div onclick="techFilterStep.surface='${surf}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-5 sm:p-6 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-lg sm:text-xl font-bold text-slate-100 mb-1">${surf}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
-        });
-        html += `</div>`;
-      } else if (techFilterStep.hand) {
-        html += `<button onclick="techFilterStep.hand=null; renderCategoryView();" class="mb-4 text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded text-slate-300 flex items-center gap-1"><i class="fas fa-arrow-left"></i> 利き手に戻る</button>`;
-        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">② グリップを選んでください</h3><div class="grid grid-cols-2 gap-3 sm:gap-4">`;
-        ['ペン', 'シェーク'].forEach(grip => {
-          const count = notes.filter(n => n.category === 'tech' && n.techDetails && n.techDetails.hand === techFilterStep.hand && n.techDetails.grip === grip).length;
-          html += `<div onclick="techFilterStep.grip='${grip}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-5 sm:p-6 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-lg sm:text-xl font-bold text-slate-100 mb-1">${grip}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
-        });
-        html += `</div>`;
-      } else {
-        html += `<h3 class="text-sm font-bold text-slate-400 mb-3">① 利き手を選んでください</h3><div class="grid grid-cols-2 gap-3 sm:gap-4">`;
-        ['右手', '左手'].forEach(hand => {
-          const count = notes.filter(n => n.category === 'tech' && n.techDetails && n.techDetails.hand === hand).length;
-          html += `<div onclick="techFilterStep.hand='${hand}'; renderCategoryView();" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-5 sm:p-6 rounded-xl cursor-pointer text-center transition-all shadow-lg"><div class="text-lg sm:text-xl font-bold text-slate-100 mb-1">${hand}</div><div class="text-xs text-slate-400">${count} 件</div></div>`;
-        });
-        html += `</div>`;
+
+      // 現在のフィルター条件に基づいて該当するノートを抽出
+      const filteredTechNotes = notes.filter(n => {
+        if (n.category !== 'tech') return false;
+        const d = n.techDetails || { hand: '右手', grip: 'ペン', surface: '裏ソフト', side: 'フォア', position: '前陣' };
+        if (techFilterStep.hand && d.hand !== techFilterStep.hand) return false;
+        if (techFilterStep.grip && d.grip !== techFilterStep.grip) return false;
+        if (techFilterStep.surface && d.surface !== techFilterStep.surface) return false;
+        if (techFilterStep.side && (d.side || 'フォア') !== techFilterStep.side) return false;
+        if (techFilterStep.position && d.position !== techFilterStep.position) return false;
+        return true;
+      });
+
+      // 次に選択する条件ブロック
+      let nextStepHtml = '';
+      if (!techFilterStep.hand) {
+        nextStepHtml = `
+          <h3 class="text-sm font-bold text-slate-400 mb-3"><i class="fas fa-filter text-red-400 mr-1"></i> ① 利き手を選んでさらに絞り込む</h3>
+          <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+            ${['右手', '左手'].map(h => `
+              <div onclick="setTechFilterStep('hand', '${h}')" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-4 rounded-xl cursor-pointer text-center transition-all shadow-md">
+                <div class="text-base sm:text-lg font-bold text-slate-100">${h}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (!techFilterStep.grip) {
+        nextStepHtml = `
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-sm font-bold text-slate-400"><i class="fas fa-filter text-red-400 mr-1"></i> ② グリップを選んでさらに絞り込む</h3>
+            <button onclick="setTechFilterStep('hand', null)" class="text-xs text-slate-400 hover:text-slate-200">Reset</button>
+          </div>
+          <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+            ${['ペン', 'シェーク'].map(g => `
+              <div onclick="setTechFilterStep('grip', '${g}')" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-4 rounded-xl cursor-pointer text-center transition-all shadow-md">
+                <div class="text-base sm:text-lg font-bold text-slate-100">${g}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (!techFilterStep.surface) {
+        nextStepHtml = `
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-sm font-bold text-slate-400"><i class="fas fa-filter text-red-400 mr-1"></i> ③ ラバー種類を選んでさらに絞り込む</h3>
+            <button onclick="setTechFilterStep('grip', null)" class="text-xs text-slate-400 hover:text-slate-200">Reset</button>
+          </div>
+          <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+            ${['裏ソフト', '粒高'].map(s => `
+              <div onclick="setTechFilterStep('surface', '${s}')" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-4 rounded-xl cursor-pointer text-center transition-all shadow-md">
+                <div class="text-base sm:text-lg font-bold text-slate-100">${s}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (!techFilterStep.side) {
+        nextStepHtml = `
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-sm font-bold text-slate-400"><i class="fas fa-filter text-red-400 mr-1"></i> ④ 使用面を選んでさらに絞り込む</h3>
+            <button onclick="setTechFilterStep('surface', null)" class="text-xs text-slate-400 hover:text-slate-200">Reset</button>
+          </div>
+          <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+            ${['フォア', 'バック'].map(sd => `
+              <div onclick="setTechFilterStep('side', '${sd}')" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-4 rounded-xl cursor-pointer text-center transition-all shadow-md">
+                <div class="text-base sm:text-lg font-bold text-slate-100">${sd}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (!techFilterStep.position) {
+        nextStepHtml = `
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-sm font-bold text-slate-400"><i class="fas fa-filter text-red-400 mr-1"></i> ⑤ ポジションを選んで最終絞り込み</h3>
+            <button onclick="setTechFilterStep('side', null)" class="text-xs text-slate-400 hover:text-slate-200">Reset</button>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            ${['台上', '前陣', '中陣', '後陣'].map(p => `
+              <div onclick="setTechFilterStep('position', '${p}')" class="bg-slate-800 border border-slate-700 hover:border-red-500 p-4 rounded-xl cursor-pointer text-center transition-all shadow-md">
+                <div class="text-base sm:text-lg font-bold text-slate-100">${p}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
       }
+
+      // 条件選択パネルの配置
+      html += nextStepHtml;
+
+      // 現在条件のタイトル表示
+      const currentCondText = [
+        techFilterStep.hand,
+        techFilterStep.grip,
+        techFilterStep.surface,
+        techFilterStep.side,
+        techFilterStep.position
+      ].filter(Boolean).join(' ＞ ') || 'すべて';
+
+      html += `
+        <div class="flex justify-between items-center border-b border-slate-700 pb-2 mb-4">
+          <h3 class="text-sm font-bold text-slate-300">
+            検索条件: <span class="text-red-400">${currentCondText}</span> 
+            <span class="text-xs text-slate-400 ml-2">(${filteredTechNotes.length} 件)</span>
+          </h3>
+          ${techFilterStep.hand ? `<button onclick="resetTechFilter(); renderCategoryView();" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded text-slate-300">条件を完全クリア</button>` : ''}
+        </div>
+        <div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          ${renderNotesList(filteredTechNotes)}
+        </div>
+      `;
+
       return html;
     }
 
@@ -1093,14 +1228,24 @@
           displayArrows = [n.scenes[0].arrow];
         }
 
+        const draggableAttr = isEditMode ? 'draggable="true"' : '';
+        const dragEvents = isEditMode ? `ondragstart="onDragStart(event, '${n.id}')" ondragover="onDragOver(event)" ondrop="onDrop(event, '${n.id}')" ondragleave="onDragLeave(event)"` : '';
+        const editBorderClass = isEditMode ? 'border-dashed border-orange-500/80 cursor-grab active:cursor-grabbing' : 'cursor-pointer';
+
         return `
-          <div onclick="openDetailModal('${n.id}')" class="bg-slate-800/90 border border-slate-700/80 hover:border-red-500/80 rounded-xl p-4 sm:p-5 shadow-lg flex flex-col justify-between cursor-pointer transform hover:-translate-y-1 transition-all group">
+          <div ${draggableAttr} ${dragEvents} onclick="${isEditMode ? '' : `openDetailModal('${n.id}')`}" class="note-card bg-slate-800/90 border border-slate-700/80 hover:border-red-500/80 rounded-xl p-4 sm:p-5 shadow-lg flex flex-col justify-between transition-all group ${editBorderClass}" data-id="${n.id}">
             <div>
               <div class="flex justify-between items-start mb-2">
-                <h4 class="text-base sm:text-lg font-bold text-slate-100 group-hover:text-red-400 transition-colors">${escapeHtml(n.title)}</h4>
+                <div class="flex items-center gap-2">
+                  ${isEditMode ? `<span class="text-orange-400 text-sm cursor-grab"><i class="fas fa-grip-vertical"></i></span>` : ''}
+                  <h4 class="text-base sm:text-lg font-bold text-slate-100 group-hover:text-red-400 transition-colors">${escapeHtml(n.title)}</h4>
+                </div>
                 <div class="flex items-center gap-2" onclick="event.stopPropagation()">
-                  <button onclick="editNote('${n.id}')" class="text-slate-400 hover:text-blue-400 text-sm p-1"><i class="fas fa-pen"></i></button>
-                  <button onclick="deleteNote('${n.id}')" class="text-slate-400 hover:text-red-400 text-sm p-1"><i class="fas fa-trash"></i></button>
+                  ${isEditMode ? `
+                    <button onclick="deleteNote('${n.id}')" class="bg-red-600/80 hover:bg-red-500 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-md transition-colors"><i class="fas fa-trash"></i> 削除</button>
+                  ` : `
+                    <button onclick="editNote('${n.id}')" class="text-slate-400 hover:text-blue-400 text-sm p-1"><i class="fas fa-pen"></i></button>
+                  `}
                 </div>
               </div>
               
@@ -1109,6 +1254,7 @@
                   <span>✋ ${n.techDetails.hand}</span>
                   <span>🏓 ${n.techDetails.grip}</span>
                   <span>🔴 ${n.techDetails.surface}</span>
+                  <span>🎯 ${n.techDetails.side || 'フォア'}</span>
                   <span>📍 ${n.techDetails.position}</span>
                 </div>
               ` : ''}
@@ -1123,11 +1269,44 @@
             </div>
             <div class="flex justify-between items-center text-[11px] sm:text-xs text-slate-500 border-t border-slate-700/50 pt-3">
               <span>更新日: ${n.updatedAt}</span>
-              <span class="text-red-400 font-medium">詳細を見る →</span>
+              <span class="text-red-400 font-medium">${isEditMode ? 'ドラッグして並び替え' : '詳細を見る →'}</span>
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    /* ドラッグ＆ドロップ並び替えハンドラ */
+    function onDragStart(e, id) {
+      draggedNoteId = id;
+      e.target.classList.add('dragging');
+    }
+    function onDragOver(e) {
+      e.preventDefault();
+      const card = e.target.closest('.note-card');
+      if (card) card.classList.add('drag-over');
+    }
+    function onDragLeave(e) {
+      const card = e.target.closest('.note-card');
+      if (card) card.classList.remove('drag-over');
+    }
+    function onDrop(e, targetId) {
+      e.preventDefault();
+      const card = e.target.closest('.note-card');
+      if (card) card.classList.remove('drag-over');
+
+      if (!draggedNoteId || draggedNoteId === targetId) return;
+
+      const fromIdx = notes.findIndex(n => n.id === draggedNoteId);
+      const toIdx = notes.findIndex(n => n.id === targetId);
+
+      if (fromIdx !== -1 && toIdx !== -1) {
+        const [moved] = notes.splice(fromIdx, 1);
+        notes.splice(toIdx, 0, moved);
+        saveToStorage();
+        renderCategoryView();
+      }
+      draggedNoteId = null;
     }
 
     function filterNotes() {
@@ -1138,6 +1317,16 @@
       let list = notes.filter(n => n.category === currentCategory);
       if (currentCategory === 'theory' && currentTheorySub) {
         list = list.filter(n => (n.theorySub || 'control') === currentTheorySub);
+      } else if (currentCategory === 'tech') {
+        list = list.filter(n => {
+          const d = n.techDetails || { hand: '右手', grip: 'ペン', surface: '裏ソフト', side: 'フォア', position: '前陣' };
+          if (techFilterStep.hand && d.hand !== techFilterStep.hand) return false;
+          if (techFilterStep.grip && d.grip !== techFilterStep.grip) return false;
+          if (techFilterStep.surface && d.surface !== techFilterStep.surface) return false;
+          if (techFilterStep.side && (d.side || 'フォア') !== techFilterStep.side) return false;
+          if (techFilterStep.position && d.position !== techFilterStep.position) return false;
+          return true;
+        });
       }
       list = list.filter(n => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q));
       container.innerHTML = renderNotesList(list);
@@ -1165,6 +1354,7 @@
             document.getElementById('tech-hand').value = n.techDetails.hand || '右手';
             document.getElementById('tech-grip').value = n.techDetails.grip || 'ペン';
             document.getElementById('tech-surface').value = n.techDetails.surface || '裏ソフト';
+            document.getElementById('tech-side').value = n.techDetails.side || 'フォア';
             document.getElementById('tech-position').value = n.techDetails.position || '前陣';
           }
           if (n.arrows) { currentArrows = [...n.arrows]; renderCourtArrows(); }
@@ -1211,6 +1401,7 @@
           hand: document.getElementById('tech-hand').value,
           grip: document.getElementById('tech-grip').value,
           surface: document.getElementById('tech-surface').value,
+          side: document.getElementById('tech-side').value,
           position: document.getElementById('tech-position').value
         };
         arrows = [...currentArrows];
@@ -1246,7 +1437,7 @@
       if (confirm('このノートを削除しますか？')) {
         notes = notes.filter(n => n.id !== id);
         saveToStorage();
-        showCategory(currentCategory);
+        renderCategoryView();
       }
     }
     function escapeHtml(str) {
