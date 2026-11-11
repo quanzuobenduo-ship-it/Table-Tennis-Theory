@@ -100,7 +100,14 @@
       }
     }
 
-    /* ドラッグ＆ドロップ（およびタッチ移動中）のスタイル */
+    /* 編集モード時のタッチ操作制御 */
+    .edit-mode-active {
+      touch-action: pan-y; /* 基本は縦スクロールを許可しつつ、ハンドル操作を最適化 */
+    }
+    .touch-handle {
+      touch-action: none; /* グリップハンドル部分はスクロールを完全に無効化してドラッグを優先 */
+    }
+
     .note-card.dragging {
       opacity: 0.5;
       border: 2px dashed #f97316 !important;
@@ -438,7 +445,7 @@
       }
     ];
 
-    let notes = JSON.parse(localStorage.getItem('tt_notes_v38')) || defaultNotes;
+    let notes = JSON.parse(localStorage.getItem('tt_notes_v39')) || defaultNotes;
     let currentCategory = null;
     let currentTheorySub = null;
     let techFilterStep = { hand: null, grip: null, surface: null, side: null, position: null };
@@ -492,7 +499,7 @@
     }
 
     function saveToStorage() {
-      localStorage.setItem('tt_notes_v38', JSON.stringify(notes));
+      localStorage.setItem('tt_notes_v39', JSON.stringify(notes));
     }
 
     function initCourtPoints(prefix = '') {
@@ -1205,7 +1212,7 @@
           </h3>
           ${techFilterStep.hand ? `<button onclick="resetTechFilter(); renderCategoryView();" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded text-slate-300">条件を完全クリア</button>` : ''}
         </div>
-        <div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 ${isEditMode ? 'edit-mode-active' : ''}">
           ${renderNotesList(filteredTechNotes)}
         </div>
       `;
@@ -1224,23 +1231,22 @@
         }
 
         const draggableAttr = isEditMode ? 'draggable="true"' : '';
-        const dragEvents = isEditMode ? `
-          ondragstart="onDragStart(event, '${n.id}')" 
-          ondragover="onDragOver(event)" 
-          ondrop="onDrop(event, '${n.id}')" 
-          ondragleave="onDragLeave(event)"
-          ontouchstart="onTouchStart(event, '${n.id}')"
-          ontouchmove="onTouchMove(event)"
-          ontouchend="onTouchEnd(event)"
-        ` : '';
-        const editBorderClass = isEditMode ? 'border-dashed border-orange-500/80 cursor-grab active:cursor-grabbing' : 'cursor-pointer';
+        const editBorderClass = isEditMode ? 'border-dashed border-orange-500/80' : 'cursor-pointer';
 
         return `
-          <div ${draggableAttr} ${dragEvents} onclick="${isEditMode ? '' : `openDetailModal('${n.id}')`}" class="note-card bg-slate-800/90 border border-slate-700/80 hover:border-red-500/80 rounded-xl p-4 sm:p-5 shadow-lg flex flex-col justify-between transition-all group ${editBorderClass}" data-id="${n.id}">
+          <div ${draggableAttr} onclick="${isEditMode ? '' : `openDetailModal('${n.id}')`}" class="note-card bg-slate-800/90 border border-slate-700/80 hover:border-red-500/80 rounded-xl p-4 sm:p-5 shadow-lg flex flex-col justify-between transition-all group ${editBorderClass}" data-id="${n.id}">
             <div>
               <div class="flex justify-between items-start mb-2">
                 <div class="flex items-center gap-2">
-                  ${isEditMode ? `<span class="text-orange-400 text-sm cursor-grab touch-handle"><i class="fas fa-grip-vertical"></i></span>` : ''}
+                  ${isEditMode ? `
+                    <span class="text-orange-400 text-base cursor-grab touch-handle p-2 -m-2 select-none"
+                          ontouchstart="onTouchStart(event, '${n.id}')"
+                          ontouchmove="onTouchMove(event)"
+                          ontouchend="onTouchEnd(event)"
+                          onmousedown="onDragStartPC(event, '${n.id}')">
+                      <i class="fas fa-grip-vertical"></i>
+                    </span>
+                  ` : ''}
                   <h4 class="text-base sm:text-lg font-bold text-slate-100 group-hover:text-red-400 transition-colors">${escapeHtml(n.title)}</h4>
                 </div>
                 <div class="flex items-center gap-2" onclick="event.stopPropagation()">
@@ -1272,46 +1278,65 @@
             </div>
             <div class="flex justify-between items-center text-[11px] sm:text-xs text-slate-500 border-t border-slate-700/50 pt-3">
               <span>更新日: ${n.updatedAt}</span>
-              <span class="text-red-400 font-medium">${isEditMode ? 'ドラッグして並び替え' : '詳細を見る →'}</span>
+              <span class="text-red-400 font-medium">${isEditMode ? '左側のグリップをタッチして並び替え' : '詳細を見る →'}</span>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    /* PC用ドラッグ＆ドロップ */
-    function onDragStart(e, id) {
+    /* PC用ドラッグ開始 */
+    function onDragStartPC(e, id) {
       draggedNoteId = id;
-      e.target.classList.add('dragging');
-    }
-    function onDragOver(e) {
-      e.preventDefault();
       const card = e.target.closest('.note-card');
-      if (card) card.classList.add('drag-over');
+      if (card) {
+        card.setAttribute('draggable', 'true');
+        card.addEventListener('dragstart', (ev) => {
+          ev.dataTransfer.setData('text/plain', id);
+          card.classList.add('dragging');
+        }, { once: true });
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+          document.querySelectorAll('.note-card').forEach(c => c.classList.remove('drag-over'));
+          draggedNoteId = null;
+        }, { once: true });
+      }
     }
-    function onDragLeave(e) {
-      const card = e.target.closest('.note-card');
-      if (card) card.classList.remove('drag-over');
-    }
-    function onDrop(e, targetId) {
-      e.preventDefault();
-      const card = e.target.closest('.note-card');
-      if (card) card.classList.remove('drag-over');
 
-      if (!draggedNoteId || draggedNoteId === targetId) return;
-      reorderNotes(draggedNoteId, targetId);
+    // ドラッグオーバー等のイベント委譲（コンテナ用）
+    document.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const card = e.target.closest('.note-card');
+      if (card) {
+        document.querySelectorAll('.note-card').forEach(c => c.classList.remove('drag-over'));
+        card.classList.add('drag-over');
+      }
+    });
+
+    document.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const card = e.target.closest('.note-card');
+      if (card && draggedNoteId) {
+        const targetId = card.getAttribute('data-id');
+        if (draggedNoteId !== targetId) {
+          reorderNotes(draggedNoteId, targetId);
+        }
+      }
+      document.querySelectorAll('.note-card').forEach(c => c.classList.remove('drag-over'));
       draggedNoteId = null;
-    }
+    });
 
-    /* スマホタッチ操作用並び替え処理 */
+    /* スマホタッチ操作用並び替え処理（グリップハンドル限定でスクロールをロック） */
     let touchDraggedEl = null;
     let touchTargetId = null;
 
     function onTouchStart(e, id) {
       if (!isEditMode) return;
       draggedNoteId = id;
-      touchDraggedEl = e.currentTarget;
-      touchDraggedEl.classList.add('dragging');
+      touchDraggedEl = e.currentTarget.closest('.note-card');
+      if (touchDraggedEl) {
+        touchDraggedEl.classList.add('dragging');
+      }
     }
 
     function onTouchMove(e) {
@@ -1346,7 +1371,6 @@
       touchTargetId = null;
     }
 
-    /* 配列の並び替え実行共通処理 */
     function reorderNotes(fromId, toId) {
       const fromIdx = notes.findIndex(n => n.id === fromId);
       const toIdx = notes.findIndex(n => n.id === toId);
