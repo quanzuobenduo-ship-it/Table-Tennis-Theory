@@ -10,7 +10,6 @@
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
     body { font-family: 'Noto Sans JP', sans-serif; }
     
-    /* コート＆グリッド全体コンテナ (基準幅430px, 高さ490px) */
     .court-container {
       position: relative;
       width: 430px;
@@ -19,7 +18,6 @@
       background-color: #0f172a;
     }
     
-    /* 卓球台本体 */
     .table-body {
       position: absolute;
       top: 15px;
@@ -52,7 +50,6 @@
       z-index: 10;
     }
 
-    /* コート外手前エリア */
     .out-body {
       position: absolute;
       top: 300px;
@@ -65,7 +62,6 @@
       box-sizing: border-box;
     }
 
-    /* 点（グリッドポイント）ボタン */
     .grid-point {
       width: 14px;
       height: 14px;
@@ -82,7 +78,6 @@
       box-shadow: 0 0 10px #ef4444;
     }
 
-    /* スマホなどの小画面向けコート自動縮小ラッパー */
     @media (max-width: 640px) {
       .court-scale-box {
         width: 340px;
@@ -100,12 +95,11 @@
       }
     }
 
-    /* 編集モード時のタッチ操作制御 */
     .edit-mode-active {
-      touch-action: pan-y; /* 基本は縦スクロールを許可しつつ、ハンドル操作を最適化 */
+      touch-action: pan-y;
     }
     .touch-handle {
-      touch-action: none; /* グリップハンドル部分はスクロールを完全に無効化してドラッグを優先 */
+      touch-action: none;
     }
 
     .note-card.dragging {
@@ -120,7 +114,6 @@
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
-  <!-- ハンバーガーメニュー用サイドドロワー (技術目次) -->
   <div id="sidebar" class="fixed inset-y-0 left-0 w-80 bg-slate-800 border-r border-slate-700 shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
     <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/50">
       <div class="flex items-center gap-2">
@@ -133,7 +126,6 @@
   </div>
   <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden"></div>
 
-  <!-- 拡大詳細モーダル -->
   <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden z-50 overflow-y-auto">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto my-auto shadow-2xl relative">
       <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-700 w-10 h-10 rounded-full flex items-center justify-center transition-colors z-30">
@@ -144,13 +136,12 @@
   </div>
 
   <div id="app" class="max-w-5xl mx-auto p-3 sm:p-6">
-    <!-- ヘッダー -->
     <header class="flex justify-between items-center mb-6 sm:mb-8 border-b border-slate-700 pb-4">
       <div class="flex items-center gap-3">
         <button onclick="toggleSidebar()" id="hamburger-btn" class="hidden text-slate-300 hover:text-white bg-slate-800 border border-slate-700 p-2.5 rounded-lg transition-colors shadow-md">
           <i class="fas fa-bars text-lg"></i>
         </button>
-        <div class="flex items-center gap-3 cursor-pointer" onclick="showHome()">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="handleHomeClick()">
           <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">🏓</div>
           <div>
             <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-red-500 to-blue-400 bg-clip-text text-transparent">卓球ノート</h1>
@@ -162,7 +153,7 @@
         <button id="edit-mode-btn" onclick="toggleEditMode()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-medium px-3 py-2 sm:px-4 sm:py-2 text-sm rounded-lg flex items-center gap-2 shadow-md transition-all">
           <i class="fas fa-edit"></i> <span id="edit-mode-text">編集</span>
         </button>
-        <button onclick="openModal()" class="bg-red-600 hover:bg-red-500 text-white font-medium px-3 py-2 sm:px-4 sm:py-2 text-sm rounded-lg flex items-center gap-2 shadow-md transition-all">
+        <button onclick="handleOpenAddModal()" class="bg-red-600 hover:bg-red-500 text-white font-medium px-3 py-2 sm:px-4 sm:py-2 text-sm rounded-lg flex items-center gap-2 shadow-md transition-all">
           <i class="fas fa-plus"></i> 新規追加
         </button>
       </div>
@@ -171,7 +162,6 @@
     <main id="main-content"></main>
   </div>
 
-  <!-- 新規追加/編集モーダル -->
   <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden z-50 overflow-y-auto">
     <div class="bg-slate-800 border border-slate-700 rounded-xl p-3 sm:p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto my-auto shadow-2xl">
       <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
@@ -192,7 +182,6 @@
           </select>
         </div>
 
-        <!-- 卓球理論専用テーマ選択 -->
         <div id="theory-special-fields" class="mb-4 bg-slate-900/80 p-4 rounded-xl border border-slate-700 hidden">
           <label class="block text-xs font-bold text-blue-400 mb-1"><i class="fas fa-brain mr-1"></i> 理論の分類テーマ</label>
           <select id="theory-sub-category" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-slate-100">
@@ -202,7 +191,6 @@
           </select>
         </div>
 
-        <!-- 技術用フィールド（5項目） -->
         <div id="tech-special-fields" class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 mb-6">
           <div class="md:col-span-4 bg-slate-900/80 p-3 sm:p-4 rounded-xl border border-slate-700 space-y-3">
             <h4 class="text-sm font-bold text-red-400 border-b border-slate-700 pb-2 mb-2"><i class="fas fa-filter mr-1"></i> 5つの基本項目</h4>
@@ -268,19 +256,12 @@
               </div>
             </div>
 
-            <div class="w-full flex justify-between text-[10px] text-slate-400 mt-2 px-2">
-              <span>▲ 相手台内(5x4)</span>
-              <span>ネット(5x1) / 自分台内(5x4)</span>
-              <span>手前(7x3) ▼</span>
-            </div>
-
             <div id="course-list-text" class="w-full text-xs text-slate-300 mt-2 bg-slate-800 p-2 rounded min-h-[32px]">
               選択中のコース: なし
             </div>
           </div>
         </div>
 
-        <!-- システム構築用フィールド -->
         <div id="pattern-special-fields" class="bg-slate-900/80 p-3 sm:p-4 rounded-xl border border-slate-700 mb-6 hidden">
           <div class="flex justify-between items-center border-b border-slate-700 pb-2 mb-3">
             <h4 id="pattern-action-title" class="text-sm font-bold text-orange-400"><i class="fas fa-route mr-1"></i> 連続ラリーのシーン作成</h4>
@@ -291,7 +272,7 @@
               </button>
             </div>
           </div>
-          <p id="pattern-guide-text" class="text-xs text-slate-400 mb-3">1球ごとに「起点→終点」を選び、説明文を入れて追加していくことで連続シーンを作れます。</p>
+          <p class="text-xs text-slate-400 mb-3">1球ごとに「起点→終点」を選び、説明文を入れて追加していくことで連続シーンを作れます。</p>
 
           <div class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 mb-4">
             <div class="md:col-span-6 flex flex-col items-center">
@@ -326,17 +307,16 @@
           </div>
         </div>
 
-        <!-- 使用用具用フィールド -->
         <div id="equipment-special-fields" class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 mb-6 hidden space-y-4">
           <h4 class="text-sm font-bold text-purple-400 border-b border-slate-700 pb-2"><i class="fas fa-sliders mr-1"></i> 用具のスペック・性能値（任意入力）</h4>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs text-slate-400 mb-1">メーカー名</label>
-              <input type="text" id="eq-maker" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs" placeholder="例: WRM, TIBHAR, BUTTERFLY">
+              <input type="text" id="eq-maker" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs" placeholder="例: WRM, TIBHAR">
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">定価 / 参考価格</label>
-              <input type="text" id="eq-price" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs" placeholder="例: ¥6,800, オープン価格">
+              <input type="text" id="eq-price" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs" placeholder="例: ¥6,800">
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">スピード性能 (0〜10)</label>
@@ -348,7 +328,7 @@
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">コントロール / 硬度</label>
-              <input type="text" id="eq-control" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs" placeholder="例: 47.5度, 抑えやすさA">
+              <input type="text" id="eq-control" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs" placeholder="例: 47.5度">
             </div>
           </div>
         </div>
@@ -445,7 +425,7 @@
       }
     ];
 
-    let notes = JSON.parse(localStorage.getItem('tt_notes_v39')) || defaultNotes;
+    let notes = JSON.parse(localStorage.getItem('tt_notes_v40')) || defaultNotes;
     let currentCategory = null;
     let currentTheorySub = null;
     let techFilterStep = { hand: null, grip: null, surface: null, side: null, position: null };
@@ -460,8 +440,8 @@
     let isEditMode = false;
     let draggedNoteId = null;
 
-    function toggleEditMode() {
-      isEditMode = !isEditMode;
+    function setEditMode(active) {
+      isEditMode = active;
       const btn = document.getElementById('edit-mode-btn');
       const text = document.getElementById('edit-mode-text');
       if (isEditMode) {
@@ -474,6 +454,36 @@
         text.innerText = '編集';
       }
       renderCategoryView();
+    }
+
+    function toggleEditMode() {
+      setEditMode(!isEditMode);
+    }
+
+    // 他のボタンを押した時に編集モードを強制解除するラッパー
+    function handleHomeClick() {
+      if (isEditMode) setEditMode(false);
+      showHome();
+    }
+
+    function handleOpenAddModal() {
+      if (isEditMode) setEditMode(false);
+      openModal();
+    }
+
+    function handleCategoryClick(catId) {
+      if (isEditMode) setEditMode(false);
+      showCategory(catId);
+    }
+
+    function handleTheorySubClick(subId) {
+      if (isEditMode) setEditMode(false);
+      selectTheorySub(subId);
+    }
+
+    function handleOpenDetailModal(id) {
+      if (isEditMode) setEditMode(false);
+      openDetailModal(id);
     }
 
     function getAllPointsCoordinates() {
@@ -499,7 +509,7 @@
     }
 
     function saveToStorage() {
-      localStorage.setItem('tt_notes_v39', JSON.stringify(notes));
+      localStorage.setItem('tt_notes_v40', JSON.stringify(notes));
     }
 
     function initCourtPoints(prefix = '') {
@@ -547,7 +557,7 @@
         setTimeout(() => initCourtPoints('pattern-'), 50);
       } else if (cat === 'equipment') {
         titleLabel.innerText = '用具の名前';
-        titleInput.placeholder = '例: CROSSiSLAND, Grass D.TecS';
+        titleInput.placeholder = '例: CROSSiSLAND';
         contentLabel.innerText = '詳細';
         contentInput.placeholder = 'メーカー/厚さ/色/用具の特徴';
         eqFields.classList.remove('hidden');
@@ -785,7 +795,7 @@
                   <button onclick="toggleAccordionNode(this)" class="w-full flex justify-between items-center p-1 text-[11px] font-medium text-blue-300 hover:bg-slate-700/50"><span>📍 ${pos}</span><i class="fas fa-chevron-down text-xs transition-transform"></i></button>
                   <div class="hidden p-1 pl-3 space-y-1 border-t border-slate-700/10">`;
                 tree[hand][grip][surf][side][pos].forEach(note => {
-                  html += `<div onclick="openDetailModal('${note.id}')" class="text-xs text-slate-300 hover:text-red-400 cursor-pointer py-1 truncate">• ${escapeHtml(note.title)}</div>`;
+                  html += `<div onclick="handleOpenDetailModal('${note.id}')" class="text-xs text-slate-300 hover:text-red-400 cursor-pointer py-1 truncate">• ${escapeHtml(note.title)}</div>`;
                 });
                 html += `</div></div>`;
               }
@@ -832,24 +842,18 @@
             <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center">
               <span class="text-xs text-slate-400 font-bold block mb-1">スピード性能</span>
               <span class="text-2xl font-extrabold text-red-400">${speed} <span class="text-xs text-slate-500">/ 10</span></span>
-              <div class="w-full bg-slate-800 rounded-full h-2 mt-2 overflow-hidden">
-                <div class="bg-red-500 h-2 rounded-full" style="width: ${speed * 10}%"></div>
-              </div>
             </div>
             <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center">
               <span class="text-xs text-slate-400 font-bold block mb-1">スピン / 変化量</span>
               <span class="text-2xl font-extrabold text-purple-400">${spin} <span class="text-xs text-slate-500">/ 10</span></span>
-              <div class="w-full bg-slate-800 rounded-full h-2 mt-2 overflow-hidden">
-                <div class="bg-purple-500 h-2 rounded-full" style="width: ${spin * 10}%"></div>
-              </div>
             </div>
             <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-center flex flex-col justify-center">
-              <span class="text-xs text-slate-400 font-bold block mb-1">コントロール / 打球感</span>
+              <span class="text-xs text-slate-400 font-bold block mb-1">コントロール / 硬度</span>
               <span class="text-lg font-bold text-blue-300 mt-1">${escapeHtml(note.eqControl || '未設定')}</span>
             </div>
           </div>
           <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 mb-6">
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"><i class="fas fa-file-alt mr-1"></i> 用具の詳細・特徴メモ</h4>
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"><i class="fas fa-file-alt mr-1"></i> 詳細・特徴メモ</h4>
             <p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(note.content)}</p>
           </div>
           <div class="flex justify-between items-center text-xs text-slate-400 border-t border-slate-700 pt-3">
@@ -971,7 +975,7 @@
           ${categories.map(cat => {
             const count = notes.filter(n => n.category === cat.id).length;
             return `
-              <div onclick="showCategory('${cat.id}')" class="bg-slate-800/80 border border-slate-700/80 hover:border-slate-500 rounded-xl p-5 sm:p-6 cursor-pointer transform hover:-translate-y-1 transition-all shadow-xl group">
+              <div onclick="handleCategoryClick('${cat.id}')" class="bg-slate-800/80 border border-slate-700/80 hover:border-slate-500 rounded-xl p-5 sm:p-6 cursor-pointer transform hover:-translate-y-1 transition-all shadow-xl group">
                 <div class="flex items-center justify-between mb-3 sm:mb-4">
                   <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br ${cat.color} flex items-center justify-center text-white text-lg sm:text-xl shadow-md group-hover:scale-110 transition-transform">
                     <i class="fas ${cat.icon}"></i>
@@ -1009,7 +1013,7 @@
         if (!currentTheorySub) {
           main.innerHTML = `
             <div class="flex items-center gap-2 text-sm text-slate-400 mb-4">
-              <span class="cursor-pointer hover:text-slate-200" onclick="showHome()">ホーム</span>
+              <span class="cursor-pointer hover:text-slate-200" onclick="handleHomeClick()">ホーム</span>
               <i class="fas fa-chevron-right text-xs"></i>
               <span class="text-slate-200 font-medium">${cat.name}</span>
             </div>
@@ -1021,7 +1025,7 @@
               ${theorySubCategories.map(sub => {
                 const count = notes.filter(n => n.category === 'theory' && (n.theorySub || 'control') === sub.id).length;
                 return `
-                  <div onclick="selectTheorySub('${sub.id}')" class="bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-xl p-5 sm:p-6 cursor-pointer transform hover:-translate-y-1 transition-all shadow-xl group">
+                  <div onclick="handleTheorySubClick('${sub.id}')" class="bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-xl p-5 sm:p-6 cursor-pointer transform hover:-translate-y-1 transition-all shadow-xl group">
                     <div class="flex items-center justify-between mb-3 sm:mb-4">
                       <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br ${sub.color} flex items-center justify-center text-white text-lg sm:text-xl shadow-md group-hover:scale-110 transition-transform">
                         <i class="fas ${sub.icon}"></i>
@@ -1040,15 +1044,15 @@
           const filtered = notes.filter(n => n.category === 'theory' && (n.theorySub || 'control') === currentTheorySub);
           main.innerHTML = `
             <div class="flex items-center gap-2 text-sm text-slate-400 mb-4">
-              <span class="cursor-pointer hover:text-slate-200" onclick="showHome()">ホーム</span>
+              <span class="cursor-pointer hover:text-slate-200" onclick="handleHomeClick()">ホーム</span>
               <i class="fas fa-chevron-right text-xs"></i>
-              <span class="cursor-pointer hover:text-slate-200" onclick="currentTheorySub=null; renderCategoryView();">${cat.name}</span>
+              <span class="cursor-pointer hover:text-slate-200" onclick="if(isEditMode)setEditMode(false); currentTheorySub=null; renderCategoryView();">${cat.name}</span>
               <i class="fas fa-chevron-right text-xs"></i>
               <span class="text-slate-200 font-medium">${sub.name}</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div class="flex items-center gap-3">
-                <button onclick="currentTheorySub=null; renderCategoryView();" class="text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded-lg text-slate-300"><i class="fas fa-arrow-left"></i></button>
+                <button onclick="if(isEditMode)setEditMode(false); currentTheorySub=null; renderCategoryView();" class="text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded-lg text-slate-300"><i class="fas fa-arrow-left"></i></button>
                 <h2 class="text-xl sm:text-2xl font-bold text-slate-100">${sub.name}</h2>
               </div>
               <input type="text" id="search-input" oninput="filterNotes()" placeholder="検索キーワードを入力..." class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 text-sm focus:outline-none focus:border-red-500 w-full sm:w-64">
@@ -1059,7 +1063,7 @@
       } else if (currentCategory === 'tech') {
         main.innerHTML = `
           <div class="flex items-center gap-2 text-sm text-slate-400 mb-4 flex-wrap">
-            <span class="cursor-pointer hover:text-slate-200" onclick="showHome()">ホーム</span>
+            <span class="cursor-pointer hover:text-slate-200" onclick="handleHomeClick()">ホーム</span>
             <i class="fas fa-chevron-right text-xs"></i>
             <span class="cursor-pointer hover:text-slate-200" onclick="resetTechFilter(); renderCategoryView();">${cat.name}</span>
             ${techFilterStep.hand ? `<i class="fas fa-chevron-right text-xs"></i><span class="cursor-pointer hover:text-slate-200" onclick="setTechFilterStep('hand', '${techFilterStep.hand}')">${techFilterStep.hand}</span>` : ''}
@@ -1081,7 +1085,7 @@
         const filtered = notes.filter(n => n.category === currentCategory);
         main.innerHTML = `
           <div class="flex items-center gap-2 text-sm text-slate-400 mb-4">
-            <span class="cursor-pointer hover:text-slate-200" onclick="showHome()">ホーム</span>
+            <span class="cursor-pointer hover:text-slate-200" onclick="handleHomeClick()">ホーム</span>
             <i class="fas fa-chevron-right text-xs"></i>
             <span class="text-slate-200 font-medium">${cat.name}</span>
           </div>
@@ -1234,7 +1238,7 @@
         const editBorderClass = isEditMode ? 'border-dashed border-orange-500/80' : 'cursor-pointer';
 
         return `
-          <div ${draggableAttr} onclick="${isEditMode ? '' : `openDetailModal('${n.id}')`}" class="note-card bg-slate-800/90 border border-slate-700/80 hover:border-red-500/80 rounded-xl p-4 sm:p-5 shadow-lg flex flex-col justify-between transition-all group ${editBorderClass}" data-id="${n.id}">
+          <div ${draggableAttr} onclick="${isEditMode ? '' : `handleOpenDetailModal('${n.id}')`}" class="note-card bg-slate-800/90 border border-slate-700/80 hover:border-red-500/80 rounded-xl p-4 sm:p-5 shadow-lg flex flex-col justify-between transition-all group ${editBorderClass}" data-id="${n.id}">
             <div>
               <div class="flex justify-between items-start mb-2">
                 <div class="flex items-center gap-2">
@@ -1285,7 +1289,6 @@
       }).join('');
     }
 
-    /* PC用ドラッグ開始 */
     function onDragStartPC(e, id) {
       draggedNoteId = id;
       const card = e.target.closest('.note-card');
@@ -1303,7 +1306,6 @@
       }
     }
 
-    // ドラッグオーバー等のイベント委譲（コンテナ用）
     document.addEventListener('dragover', (e) => {
       e.preventDefault();
       const card = e.target.closest('.note-card');
@@ -1326,7 +1328,6 @@
       draggedNoteId = null;
     });
 
-    /* スマホタッチ操作用並び替え処理（グリップハンドル限定でスクロールをロック） */
     let touchDraggedEl = null;
     let touchTargetId = null;
 
@@ -1506,7 +1507,11 @@
       showCategory(currentCategory);
     }
 
-    function editNote(id) { openModal(id); }
+    function editNote(id) { 
+      if (isEditMode) setEditMode(false);
+      openModal(id); 
+    }
+    
     function deleteNote(id) {
       if (confirm('このノートを削除しますか？')) {
         notes = notes.filter(n => n.id !== id);
@@ -1514,6 +1519,7 @@
         renderCategoryView();
       }
     }
+    
     function escapeHtml(str) {
       return (str || '').replace(/[&<>"']/g, function(m) {
         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
