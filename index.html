@@ -100,14 +100,15 @@
       }
     }
 
-    /* ドラッグ＆ドロップ中のスタイル */
+    /* ドラッグ＆ドロップ（およびタッチ移動中）のスタイル */
     .note-card.dragging {
-      opacity: 0.4;
-      border: 2px dashed #f97316;
+      opacity: 0.5;
+      border: 2px dashed #f97316 !important;
+      transform: scale(0.98);
     }
     .note-card.drag-over {
-      border-color: #38bdf8;
-      background-color: rgba(56, 189, 248, 0.1);
+      border-color: #38bdf8 !important;
+      background-color: rgba(56, 189, 248, 0.15) !important;
     }
   </style>
 </head>
@@ -437,7 +438,7 @@
       }
     ];
 
-    let notes = JSON.parse(localStorage.getItem('tt_notes_v37')) || defaultNotes;
+    let notes = JSON.parse(localStorage.getItem('tt_notes_v38')) || defaultNotes;
     let currentCategory = null;
     let currentTheorySub = null;
     let techFilterStep = { hand: null, grip: null, surface: null, side: null, position: null };
@@ -491,7 +492,7 @@
     }
 
     function saveToStorage() {
-      localStorage.setItem('tt_notes_v37', JSON.stringify(notes));
+      localStorage.setItem('tt_notes_v38', JSON.stringify(notes));
     }
 
     function initCourtPoints(prefix = '') {
@@ -736,7 +737,6 @@
       }
     }
 
-    /* 5項目（利き手・グリップ・ラバー・使用面・ポジション）対応の目次 */
     function updateSidebarAccordion() {
       const container = document.getElementById('sidebar-content');
       const techNotes = notes.filter(n => n.category === 'tech');
@@ -1103,11 +1103,9 @@
       renderCategoryView();
     }
 
-    /* どの段階でもその条件に合致するノート一覧と次の選択要素を併せて描画する関数 */
     function renderTechSelectionAndList() {
       let html = '';
 
-      // 現在のフィルター条件に基づいて該当するノートを抽出
       const filteredTechNotes = notes.filter(n => {
         if (n.category !== 'tech') return false;
         const d = n.techDetails || { hand: '右手', grip: 'ペン', surface: '裏ソフト', side: 'フォア', position: '前陣' };
@@ -1119,7 +1117,6 @@
         return true;
       });
 
-      // 次に選択する条件ブロック
       let nextStepHtml = '';
       if (!techFilterStep.hand) {
         nextStepHtml = `
@@ -1190,10 +1187,8 @@
         `;
       }
 
-      // 条件選択パネルの配置
       html += nextStepHtml;
 
-      // 現在条件のタイトル表示
       const currentCondText = [
         techFilterStep.hand,
         techFilterStep.grip,
@@ -1229,7 +1224,15 @@
         }
 
         const draggableAttr = isEditMode ? 'draggable="true"' : '';
-        const dragEvents = isEditMode ? `ondragstart="onDragStart(event, '${n.id}')" ondragover="onDragOver(event)" ondrop="onDrop(event, '${n.id}')" ondragleave="onDragLeave(event)"` : '';
+        const dragEvents = isEditMode ? `
+          ondragstart="onDragStart(event, '${n.id}')" 
+          ondragover="onDragOver(event)" 
+          ondrop="onDrop(event, '${n.id}')" 
+          ondragleave="onDragLeave(event)"
+          ontouchstart="onTouchStart(event, '${n.id}')"
+          ontouchmove="onTouchMove(event)"
+          ontouchend="onTouchEnd(event)"
+        ` : '';
         const editBorderClass = isEditMode ? 'border-dashed border-orange-500/80 cursor-grab active:cursor-grabbing' : 'cursor-pointer';
 
         return `
@@ -1237,7 +1240,7 @@
             <div>
               <div class="flex justify-between items-start mb-2">
                 <div class="flex items-center gap-2">
-                  ${isEditMode ? `<span class="text-orange-400 text-sm cursor-grab"><i class="fas fa-grip-vertical"></i></span>` : ''}
+                  ${isEditMode ? `<span class="text-orange-400 text-sm cursor-grab touch-handle"><i class="fas fa-grip-vertical"></i></span>` : ''}
                   <h4 class="text-base sm:text-lg font-bold text-slate-100 group-hover:text-red-400 transition-colors">${escapeHtml(n.title)}</h4>
                 </div>
                 <div class="flex items-center gap-2" onclick="event.stopPropagation()">
@@ -1276,7 +1279,7 @@
       }).join('');
     }
 
-    /* ドラッグ＆ドロップ並び替えハンドラ */
+    /* PC用ドラッグ＆ドロップ */
     function onDragStart(e, id) {
       draggedNoteId = id;
       e.target.classList.add('dragging');
@@ -1296,9 +1299,57 @@
       if (card) card.classList.remove('drag-over');
 
       if (!draggedNoteId || draggedNoteId === targetId) return;
+      reorderNotes(draggedNoteId, targetId);
+      draggedNoteId = null;
+    }
 
-      const fromIdx = notes.findIndex(n => n.id === draggedNoteId);
-      const toIdx = notes.findIndex(n => n.id === targetId);
+    /* スマホタッチ操作用並び替え処理 */
+    let touchDraggedEl = null;
+    let touchTargetId = null;
+
+    function onTouchStart(e, id) {
+      if (!isEditMode) return;
+      draggedNoteId = id;
+      touchDraggedEl = e.currentTarget;
+      touchDraggedEl.classList.add('dragging');
+    }
+
+    function onTouchMove(e) {
+      if (!draggedNoteId || !touchDraggedEl) return;
+      
+      const touch = e.touches[0];
+      const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+      const card = targetEl ? targetEl.closest('.note-card') : null;
+
+      document.querySelectorAll('.note-card').forEach(c => c.classList.remove('drag-over'));
+
+      if (card && card !== touchDraggedEl) {
+        card.classList.add('drag-over');
+        touchTargetId = card.getAttribute('data-id');
+      } else {
+        touchTargetId = null;
+      }
+    }
+
+    function onTouchEnd(e) {
+      if (!draggedNoteId) return;
+
+      if (touchDraggedEl) touchDraggedEl.classList.remove('dragging');
+      document.querySelectorAll('.note-card').forEach(c => c.classList.remove('drag-over'));
+
+      if (touchTargetId && draggedNoteId !== touchTargetId) {
+        reorderNotes(draggedNoteId, touchTargetId);
+      }
+
+      draggedNoteId = null;
+      touchDraggedEl = null;
+      touchTargetId = null;
+    }
+
+    /* 配列の並び替え実行共通処理 */
+    function reorderNotes(fromId, toId) {
+      const fromIdx = notes.findIndex(n => n.id === fromId);
+      const toIdx = notes.findIndex(n => n.id === toId);
 
       if (fromIdx !== -1 && toIdx !== -1) {
         const [moved] = notes.splice(fromIdx, 1);
@@ -1306,7 +1357,6 @@
         saveToStorage();
         renderCategoryView();
       }
-      draggedNoteId = null;
     }
 
     function filterNotes() {
